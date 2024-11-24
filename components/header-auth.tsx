@@ -1,5 +1,6 @@
 'use client';
 
+import { User } from '@supabase/supabase-js'
 import { signOutAction } from "@/app/actions";
 import { hasEnvVars } from "@/lib/supabase/check-env-vars";
 import Link from "next/link";
@@ -14,14 +15,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Settings, User as UserIcon } from "lucide-react";
 import { ThemeSwitcher } from "./theme-switcher";
+import { UserRole } from '@/lib/supabase/types'
 
 interface AuthButtonProps {
-  user: any | null;
+  user: User | null
+  userRole: UserRole | undefined
 }
 
-export default function AuthButton({ user }: AuthButtonProps) {
+export default function AuthButton({ user, userRole }: AuthButtonProps) {
   if (!hasEnvVars) {
     return (
       <div className="flex items-center gap-2">
@@ -46,12 +49,14 @@ export default function AuthButton({ user }: AuthButtonProps) {
   }
 
   // Get initials from email for avatar fallback
-  const initials = user.email
-    .split('@')[0]
-    .split('.')
-    .map((n: string) => n[0])
-    .join('')
-    .toUpperCase();
+  const initials = user.email 
+    ? user.email
+        .split('@')[0]
+        .split('.')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase()
+    : 'U'; // Fallback to 'U' for User if no email
 
   return (
     <DropdownMenu>
@@ -69,13 +74,26 @@ export default function AuthButton({ user }: AuthButtonProps) {
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium">{user.email}</p>
-            <p className="text-xs text-muted-foreground">User Account</p>
+            <p className="text-sm font-medium">{user.email || 'No email'}</p>
+            <p className="text-xs text-muted-foreground">
+              {userRole === 'admin' ? 'Admin Account' : 'User Account'}
+            </p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        
+        {/* Show admin-specific menu items */}
+        {userRole === 'admin' && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href="/admin/dashboard">Admin Dashboard</Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
+        
         <DropdownMenuItem>
-          <User className="mr-2 h-4 w-4" />
+          <UserIcon className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
         <DropdownMenuItem>

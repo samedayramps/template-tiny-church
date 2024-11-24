@@ -1,20 +1,23 @@
-import { type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
+import { handleImpersonation } from "@/lib/supabase/impersonation-middleware";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  // First, handle auth session
+  const sessionResponse = await updateSession(request);
+  if (sessionResponse.status !== 200) {
+    return sessionResponse;
+  }
+
+  // Then, handle impersonation
+  const impersonationResponse = await handleImpersonation(request);
+  if (impersonationResponse.headers.get('location')) {
+    return impersonationResponse;
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - images - .svg, .png, .jpg, .jpeg, .gif, .webp
-     * Feel free to modify this pattern to include more paths.
-     */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-  ],
+  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
 };

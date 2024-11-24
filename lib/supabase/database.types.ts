@@ -7,8 +7,102 @@ export type Json =
   | Json[]
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
+      analytics: {
+        Row: {
+          bounce_rate: number
+          created_at: string
+          date: string
+          id: string
+          page_views: number
+          source: string
+          visitors: number
+        }
+        Insert: {
+          bounce_rate?: number
+          created_at?: string
+          date?: string
+          id?: string
+          page_views?: number
+          source: string
+          visitors?: number
+        }
+        Update: {
+          bounce_rate?: number
+          created_at?: string
+          date?: string
+          id?: string
+          page_views?: number
+          source?: string
+          visitors?: number
+        }
+        Relationships: []
+      }
+      impersonation_sessions: {
+        Row: {
+          admin_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          impersonated_id: string
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          impersonated_id: string
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          impersonated_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "impersonation_sessions_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "impersonation_sessions_impersonated_id_fkey"
+            columns: ["impersonated_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       password_reset_tokens: {
         Row: {
           created_at: string
@@ -41,19 +135,49 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          metadata: Json | null
+          raw_user_meta_data: Json | null
+          role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           email: string
           id: string
+          metadata?: Json | null
+          raw_user_meta_data?: Json | null
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
+          metadata?: Json | null
+          raw_user_meta_data?: Json | null
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["user_role"] | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id: string
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"] | null
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -68,9 +192,20 @@ export type Database = {
         }
         Returns: string
       }
+      get_active_impersonation: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          admin_id: string
+          impersonated_id: string
+        }[]
+      }
+      verify_user_roles_setup: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
     }
     Enums: {
-      [_ in never]: never
+      user_role: "admin" | "user" | "guest"
     }
     CompositeTypes: {
       [_ in never]: never

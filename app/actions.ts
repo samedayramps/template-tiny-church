@@ -4,6 +4,7 @@ import { encodedRedirect } from "@/utils/utils";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { startImpersonation as startImpersonationUtil, stopImpersonation as stopImpersonationUtil } from "@/lib/supabase/impersonation";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
@@ -149,3 +150,196 @@ export const signOutAction = async () => {
   
   return redirect("/sign-in");
 };
+
+export async function adminOnlyAction() {
+  const supabase = await createServerSupabaseClient()
+  
+  const { data: { session } } = await supabase.auth.getSession()
+  if (!session) throw new Error('Not authenticated')
+  
+  const { data: roleData } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('id', session.user.id)
+    .single()
+    
+  if (roleData?.role !== 'admin') {
+    throw new Error('Unauthorized')
+  }
+  
+  // Proceed with admin-only action
+}
+
+export async function updateUserRole(formData: FormData) {
+  const supabase = await createServerSupabaseClient();
+  
+  // Check if current user is admin
+  const currentUser = await supabase.auth.getUser()
+  if (!currentUser.data.user?.id) {
+    return encodedRedirect(
+      "error",
+      "/admin/users",
+      "User not found"
+    );
+  }
+
+  const { data: currentUserRole } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('id', currentUser.data.user.id)
+    .single();
+    
+  if (currentUserRole?.role !== 'admin') {
+    return encodedRedirect(
+      "error",
+      "/admin/users",
+      "Only admins can update user roles"
+    );
+  }
+  
+  const userId = formData.get('userId') as string;
+  const newRole = formData.get('role') as 'admin' | 'user' | 'guest';
+  
+  const { error } = await supabase
+    .from('user_roles')
+    .update({ 
+      role: newRole,
+      updated_at: new Date().toISOString(),
+      updated_by: (await supabase.auth.getUser()).data.user?.id
+    })
+    .eq('id', userId);
+
+  if (error) {
+    return encodedRedirect(
+      "error",
+      "/admin/users",
+      "Failed to update user role"
+    );
+  }
+
+  return encodedRedirect(
+    "success",
+    "/admin/users",
+    "User role updated successfully"
+  );
+}
+
+export async function updateUserProfile(formData: FormData) {
+  const supabase = await createServerSupabaseClient();
+  
+  // Check if current user is admin
+  const currentUser = await supabase.auth.getUser()
+  if (!currentUser.data.user?.id) {
+    return encodedRedirect(
+      "error",
+      "/admin/users",
+      "User not found"
+    );
+  }
+
+  const { data: currentUserRole } = await supabase
+    .from('user_roles')
+    .select('role')
+    .eq('id', currentUser.data.user.id)
+    .single();
+    
+  if (currentUserRole?.role !== 'admin') {
+    return encodedRedirect(
+      "error",
+      "/admin/users",
+      "Only admins can update user profiles"
+    );
+  }
+  
+  const userId = formData.get('userId') as string;
+  const email = formData.get('email') as string;
+  const role = formData.get('role') as 'admin' | 'user' | 'guest';
+  const metadata = JSON.parse(formData.get('metadata') as string);
+  const rawUserMetaData = JSON.parse(formData.get('raw_user_meta_data') as string);
+  
+  // Update profiles table
+  const { error: profileError } = await supabase
+    .from('profiles')
+    .update({ 
+      email,
+      role,
+      metadata,
+      raw_user_meta_data: rawUserMetaData,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', userId);
+
+  if (profileError) {
+    return encodedRedirect(
+      "error",
+      "/admin/users",
+      "Failed to update user profile"
+    );
+  }
+
+  // Update user_roles table
+  const { error: roleError } = await supabase
+    .from('user_roles')
+    .update({ 
+      role,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', userId);
+
+  if (roleError) {
+    return encodedRedirect(
+      "error",
+      "/admin/users",
+      "Failed to update user role"
+    );
+  }
+
+  return encodedRedirect(
+    "success",
+    "/admin/users",
+    "User profile updated successfully"
+  );
+}
+
+export async function impersonateUser(formData: FormData) {
+  try {
+    const userId = formData.get('userId') as string;
+    if (!userId) {
+      throw new Error('No user ID provided');
+    }
+
+    const session = await startImpersonationUtil(userId);
+    
+    // Simplified success message
+    return encodedRedirect(
+      "success",
+      "/dashboard",
+      `Now viewing as ${session.impersonated?.email}`
+    );
+  } catch (error) {
+    console.error('[Impersonation] Failed to start:', error);
+    return encodedRedirect(
+      "error",
+      "/admin/users",
+      error instanceof Error ? error.message : 'Failed to impersonate user'
+    );
+  }
+}
+
+export async function stopImpersonation() {
+  try {
+    console.log('[Action] Stopping impersonation');
+    await stopImpersonationUtil();
+    console.log('[Action] Successfully stopped impersonation');
+    
+    // Don't treat the redirect as an error
+    return encodedRedirect(
+      "success",
+      "/admin/users",
+      "Stopped impersonation"
+    );
+  } catch (error) {
+    console.error('[Action] Failed to stop impersonation:', error);
+    throw error; // Let Next.js handle the error
+  }
+}

@@ -2,6 +2,7 @@ import { ThemeProvider } from "next-themes";
 import { GeistSans } from "geist/font/sans";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
+import { ImpersonationWrapper } from "@/components/layouts/impersonation-wrapper";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -35,10 +36,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <SiteHeader />
-          <main className="min-h-screen flex flex-col items-center">
-            {children}
-          </main>
+          <ImpersonationWrapper>
+            <div className="flex flex-col min-h-screen">
+              <SiteHeader />
+              <main className="flex-grow">
+                {children}
+              </main>
+            </div>
+          </ImpersonationWrapper>
         </ThemeProvider>
       </body>
     </html>

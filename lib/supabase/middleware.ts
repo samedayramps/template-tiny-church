@@ -1,66 +1,57 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { Database } from "./database.types";
 
 export const updateSession = async (request: NextRequest) => {
-  try {
-    let response = NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
 
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll();
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value }) =>
-              request.cookies.set(name, value),
-            );
-            response = NextResponse.next({
-              request,
-            });
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options),
-            );
-          },
+  const supabase = createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          });
+        },
+        remove(name: string, options: any) {
+          response.cookies.set({
+            name,
+            value: "",
+            ...options,
+          });
         },
       },
-    );
-
-    const {
-      data: { user },
-      error: userError
-    } = await supabase.auth.getUser();
-
-    console.log('[Middleware] Auth check:', {
-      path: request.nextUrl.pathname,
-      authenticated: !!user,
-      error: userError?.message
-    });
-
-    // protected routes
-    if (request.nextUrl.pathname.startsWith("/protected") && userError) {
-      console.log('[Middleware] Redirecting unauthenticated user to /sign-in');
-      return NextResponse.redirect(new URL("/sign-in", request.url));
     }
+  );
 
-    if (request.nextUrl.pathname === "/" && !userError) {
-      console.log('[Middleware] Redirecting authenticated user to /protected');
-      return NextResponse.redirect(new URL("/protected", request.url));
+  // Refresh session if expired
+  await supabase.auth.getSession();
+
+  // Get user role
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    // Redirect admin users to admin dashboard after login
+    if (roleData?.role === 'admin' && request.nextUrl.pathname === '/protected') {
+      return NextResponse.redirect(new URL('/admin', request.url));
     }
-
-    return response;
-  } catch (e) {
-    console.error('[Middleware] Error:', e);
-    return NextResponse.next({
-      request: {
-        headers: request.headers,
-      },
-    });
   }
+
+  return response;
 };
