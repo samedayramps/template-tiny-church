@@ -1,17 +1,20 @@
 "use server";
 
 import { encodedRedirect } from "@/utils/utils";
-import { createClient } from "@/utils/supabase/server";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
   const password = formData.get("password")?.toString();
-  const supabase = await createClient();
+  const supabase = await createServerSupabaseClient();
   const origin = (await headers()).get("origin");
 
+  console.log('[Auth] Sign up attempt:', { email });
+
   if (!email || !password) {
+    console.log('[Auth] Sign up failed: Missing credentials');
     return encodedRedirect(
       "error",
       "/sign-up",
@@ -28,9 +31,10 @@ export const signUpAction = async (formData: FormData) => {
   });
 
   if (error) {
-    console.error(error.code + " " + error.message);
+    console.error('[Auth] Sign up error:', error.message);
     return encodedRedirect("error", "/sign-up", error.message);
   } else {
+    console.log('[Auth] Sign up successful:', { email });
     return encodedRedirect(
       "success",
       "/sign-up",
@@ -42,7 +46,9 @@ export const signUpAction = async (formData: FormData) => {
 export const signInAction = async (formData: FormData) => {
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
-  const supabase = await createClient();
+  const supabase = await createServerSupabaseClient();
+
+  console.log('[Auth] Sign in attempt:', { email });
 
   const { error } = await supabase.auth.signInWithPassword({
     email,
@@ -50,15 +56,17 @@ export const signInAction = async (formData: FormData) => {
   });
 
   if (error) {
+    console.error('[Auth] Sign in error:', error.message);
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
+  console.log('[Auth] Sign in successful:', { email });
   return redirect("/protected");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
   const email = formData.get("email")?.toString();
-  const supabase = await createClient();
+  const supabase = await createServerSupabaseClient();
   const origin = (await headers()).get("origin");
   const callbackUrl = formData.get("callbackUrl")?.toString();
 
@@ -91,7 +99,7 @@ export const forgotPasswordAction = async (formData: FormData) => {
 };
 
 export const resetPasswordAction = async (formData: FormData) => {
-  const supabase = await createClient();
+  const supabase = await createServerSupabaseClient();
 
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
@@ -128,7 +136,16 @@ export const resetPasswordAction = async (formData: FormData) => {
 };
 
 export const signOutAction = async () => {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  const supabase = await createServerSupabaseClient();
+  console.log('[Auth] Sign out attempt');
+  
+  const { error } = await supabase.auth.signOut();
+  
+  if (error) {
+    console.error('[Auth] Sign out error:', error.message);
+  } else {
+    console.log('[Auth] Sign out successful');
+  }
+  
   return redirect("/sign-in");
 };

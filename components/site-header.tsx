@@ -1,25 +1,29 @@
 import Link from "next/link";
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { Button } from "@/components/ui/button";
+import AuthButton from "@/components/header-auth";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { Logo } from "@/components/logo";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
-    <header className="fixed w-full top-0 z-10 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto px-4 h-14 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="font-semibold text-lg">
-          Tiny Church
-        </Link>
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        <div className="flex flex-1 items-center justify-between">
+          {/* Logo */}
+          <Link 
+            href="/" 
+            className="flex items-center space-x-3 font-semibold"
+          >
+            <Logo className="h-8 w-8 text-foreground" />
+            <span>Tiny Church</span>
+          </Link>
 
-        {/* Navigation and Actions */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" asChild>
-            <Link href="/sign-in">Sign in</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/sign-up">Get Started</Link>
-          </Button>
-          <ThemeSwitcher />
+          {/* Navigation and Actions */}
+          <div className="flex items-center gap-2">
+            <AuthButton user={user} />
+          </div>
         </div>
       </div>
     </header>

@@ -11,6 +11,14 @@ export const metadata = {
   metadataBase: new URL(defaultUrl),
   title: "Focus on your calling",
   description: "We provide small churches with a simple, all-in-one platform that handles their complete digital presence, so pastors can focus on ministry instead of managing technology.",
+  icons: {
+    icon: [
+      {
+        url: "/favicon.png",
+        href: "/favicon.png",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({

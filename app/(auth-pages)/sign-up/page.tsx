@@ -1,5 +1,5 @@
 import { signUpAction } from "@/app/actions";
-import { AuthCard } from "@/components/auth-card";
+import { AuthCard } from "@/components/common/auth-card";
 import { FormMessage, Message } from "@/components/form-message";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
