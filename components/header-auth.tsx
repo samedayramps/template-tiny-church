@@ -1,7 +1,7 @@
 'use client';
 
 import { User } from '@supabase/supabase-js'
-import { signOutAction } from "@/app/actions";
+import { signOutAction } from "@/app/actions/auth";
 import { hasEnvVars } from "@/lib/supabase/check-env-vars";
 import Link from "next/link";
 import { Badge } from "./ui/badge";

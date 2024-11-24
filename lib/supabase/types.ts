@@ -23,8 +23,16 @@ export interface UserRoleWithAuth {
   email: string;
   role: Database['public']['Enums']['user_role'];
   updated_at: string;
-  metadata: Database['public']['Tables']['profiles']['Row']['metadata'];
+  metadata: {
+    tenant_name?: string;
+    [key: string]: any;
+  } | null;
   raw_user_meta_data: Database['public']['Tables']['profiles']['Row']['raw_user_meta_data'];
+  tenants?: {
+    id: string;
+    name: string;
+  } | null;
+  tenant_id?: string | null;
 }
 
 // Type for the response from get_active_impersonation RPC

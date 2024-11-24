@@ -1,3 +1,5 @@
+import { SubscribeForm } from "@/components/subscribe-form";
+
 export default function Home() {
   return (
     <div className="flex-1 w-full flex flex-col items-center justify-center min-h-screen text-center px-4">
@@ -12,17 +14,8 @@ export default function Home() {
           managing technology.
         </p>
         <div className="flex flex-col items-center gap-4">
-          <div className="flex w-full max-w-md gap-4">
-            <input 
-              type="email" 
-              placeholder="Enter your email"
-              className="flex-1 rounded-md border px-4 py-2"
-            />
-            <button className="bg-foreground text-background px-6 py-2 rounded-md">
-              Subscribe
-            </button>
-          </div>
-          <p className="text-sm text-foreground/60">
+          <SubscribeForm />
+          <p className="text-sm text-muted-foreground">
             Be the first to know when we launch
           </p>
         </div>

@@ -10,10 +10,11 @@ import {
   BarChart,
   LogOut,
   ChevronDown,
+  Building,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { signOutAction } from "@/app/actions"
+import { signOutAction } from "@/app/actions/auth"
 
 const sidebarNavItems = [
   {
@@ -25,6 +26,11 @@ const sidebarNavItems = [
     title: "Users",
     href: "/admin/users",
     icon: Users,
+  },
+  {
+    title: "Tenants",
+    href: "/admin/tenants",
+    icon: Building,
   },
   {
     title: "Analytics",

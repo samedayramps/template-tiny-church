@@ -101,4 +101,24 @@ export async function getImpersonatedUser() {
     .single();
 
   return session?.impersonated_user || null;
+}
+
+export async function getActiveImpersonation() {
+  const supabase = await createServerSupabaseClient();
+  
+  try {
+    const { data, error } = await supabase
+      .rpc('get_active_impersonation')
+      .maybeSingle();
+      
+    if (error) {
+      console.error('[Impersonation] Failed to get active session:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('[Impersonation] Error:', error); 
+    return null;
+  }
 } 

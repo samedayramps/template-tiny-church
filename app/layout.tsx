@@ -3,6 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 import { ImpersonationWrapper } from "@/components/layouts/impersonation-wrapper";
+import { Toaster } from "@/components/ui/toaster";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -44,6 +45,7 @@ export default function RootLayout({
               </main>
             </div>
           </ImpersonationWrapper>
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

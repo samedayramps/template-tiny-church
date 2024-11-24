@@ -138,6 +138,7 @@ export type Database = {
           metadata: Json | null
           raw_user_meta_data: Json | null
           role: Database["public"]["Enums"]["user_role"] | null
+          tenant_id: string | null
           updated_at: string
         }
         Insert: {
@@ -147,6 +148,7 @@ export type Database = {
           metadata?: Json | null
           raw_user_meta_data?: Json | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          tenant_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -156,9 +158,50 @@ export type Database = {
           metadata?: Json | null
           raw_user_meta_data?: Json | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          tenant_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_profiles_tenant_id"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenants: {
+        Row: {
+          admin_id: string
+          created_at: string | null
+          id: string
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenants_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -192,11 +235,22 @@ export type Database = {
         }
         Returns: string
       }
+      create_tenant: {
+        Args: {
+          tenant_name: string
+          admin_email: string
+        }
+        Returns: string
+      }
       get_active_impersonation: {
         Args: Record<PropertyKey, never>
         Returns: {
+          id: string
           admin_id: string
           impersonated_id: string
+          admin_email: string
+          impersonated_email: string
+          expires_at: string
         }[]
       }
       verify_user_roles_setup: {
