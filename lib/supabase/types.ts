@@ -3,6 +3,7 @@ import { Database } from './database.types'
 export type Tables = Database['public']['Tables']
 
 export enum UserRole {
+  SUPER_ADMIN = 'super_admin',
   ADMIN = 'admin',
   USER = 'user',
   GUEST = 'guest'

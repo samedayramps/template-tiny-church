@@ -18,13 +18,23 @@ import {
 import { LogOut, Settings, User as UserIcon } from "lucide-react";
 import { ThemeSwitcher } from "./theme-switcher";
 import { UserRole } from '@/lib/supabase/types'
+import { Skeleton } from "./ui/skeleton";
 
 interface AuthButtonProps {
-  user: User | null
-  userRole: UserRole | undefined
+  user: any // Replace with proper user type
+  userRole?: UserRole
+  isLoading?: boolean
 }
 
-export default function AuthButton({ user, userRole }: AuthButtonProps) {
+export default function AuthButton({ user, userRole, isLoading }: AuthButtonProps) {
+  if (isLoading) {
+    return (
+      <Button variant="ghost" size="sm" disabled>
+        <Skeleton className="h-4 w-20" />
+      </Button>
+    )
+  }
+
   if (!hasEnvVars) {
     return (
       <div className="flex items-center gap-2">
