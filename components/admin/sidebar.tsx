@@ -15,13 +15,13 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { signOutAction } from "@/app/actions/auth"
+import { signOutAction } from "@/actions/auth"
 import { Suspense, useMemo } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useState, useEffect } from "react"
-import { UserRole } from "@/lib/supabase/types"
-import { createClientSupabaseClient } from "@/lib/supabase/client"
+import { UserRole } from "@/lib/data/supabase/types"
+import { createClientSupabaseClient } from "@/lib/data/supabase/client"
 import { useToast } from "@/hooks/use-toast"
 
 interface NavItem {
@@ -35,7 +35,7 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   {
     title: "Dashboard",
-    href: "/admin",
+    href: "/admin/dashboard",
     icon: LayoutDashboard,
     role: [UserRole.ADMIN, UserRole.SUPER_ADMIN],
   },

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "./ui/button";
-import { stopImpersonation } from "@/app/actions/admin";
+import { stopImpersonation } from "@/actions/admin";
 
 export function ImpersonationBanner({ adminEmail, userEmail }: { 
   adminEmail: string;

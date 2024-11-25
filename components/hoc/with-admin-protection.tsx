@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createBrowserClient } from "@supabase/ssr";
-import { Database } from "@/lib/supabase/database.types";
+import { Database } from "@/lib/data/supabase/database.types";
 import { useRouter } from "next/navigation";
 
 export function withAdminProtection<P extends object>(

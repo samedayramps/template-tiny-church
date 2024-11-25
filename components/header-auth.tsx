@@ -1,8 +1,8 @@
 'use client';
 
 import { User } from '@supabase/supabase-js'
-import { signOutAction } from "@/app/actions/auth";
-import { hasEnvVars } from "@/lib/supabase/check-env-vars";
+import { signOutAction } from "@/actions/auth";
+import { hasEnvVars } from "@/lib/data/supabase/check-env-vars";
 import Link from "next/link";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -17,7 +17,7 @@ import {
 } from "./ui/dropdown-menu";
 import { LogOut, Settings, User as UserIcon } from "lucide-react";
 import { ThemeSwitcher } from "./theme-switcher";
-import { UserRole } from '@/lib/supabase/types'
+import { UserRole } from '@/lib/data/supabase/types'
 import { Skeleton } from "./ui/skeleton";
 
 interface AuthButtonProps {

@@ -1,8 +1,8 @@
 "use server";
 
 import { encodedRedirect } from "@/utils/utils";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { startImpersonation, stopImpersonation as stopImpersonationUtil } from "@/lib/supabase/impersonation";
+import { createServerSupabaseClient } from "@/lib/data/supabase/server";
+import { startImpersonation, stopImpersonation as stopImpersonationUtil } from "@/lib/data/supabase/impersonation";
 
 export async function adminOnlyAction() {
   const supabase = await createServerSupabaseClient();

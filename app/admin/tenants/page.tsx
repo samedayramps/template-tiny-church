@@ -2,10 +2,10 @@
 
 import { withAdminProtection } from "@/components/hoc/with-admin-protection";
 import { ImpersonationWrapper } from "@/components/layouts/impersonation-wrapper";
-import { createClientSupabaseClient } from "@/lib/supabase/client";
+import { createClientSupabaseClient } from "@/lib/data/supabase/client";
 import { TenantsDataTable } from "@/components/admin/tenants-table";
 import { useEffect, useState } from "react";
-import { Database } from "@/lib/supabase/database.types";
+import { Database } from "@/lib/data/supabase/database.types";
 
 // Define types for the data structure returned from Supabase
 type TenantWithProfile = {

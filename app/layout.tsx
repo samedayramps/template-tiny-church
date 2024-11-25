@@ -4,8 +4,8 @@ import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 import { ImpersonationWrapper } from "@/components/layouts/impersonation-wrapper";
 import { Toaster } from "@/components/ui/toaster";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
-import { UserRole } from "@/lib/supabase/types";
+import { createServerSupabaseClient } from "@/lib/data/supabase/server";
+import { UserRole } from "@/lib/data/supabase/types";
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`

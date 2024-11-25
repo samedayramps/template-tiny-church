@@ -1,6 +1,6 @@
 "use server";
 
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient } from "@/lib/data/supabase/server";
 
 export async function checkAdminRole(userId: string) {
   const supabase = await createServerSupabaseClient();

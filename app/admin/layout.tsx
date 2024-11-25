@@ -1,5 +1,5 @@
 import { Sidebar } from "@/components/admin/sidebar"
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createServerSupabaseClient } from "@/lib/data/supabase/server"
 
 export default async function AdminLayout({
   children,

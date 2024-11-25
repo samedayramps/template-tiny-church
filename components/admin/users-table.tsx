@@ -3,11 +3,11 @@
 import { useMemo, useState } from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import { Building, Pencil, Eye, Trash2 } from "lucide-react"
-import { UserRoleWithAuth } from "@/lib/supabase/types"
+import { UserRoleWithAuth } from "@/lib/data/supabase/types"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/ui/data-table/data-table"
 import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
-import { impersonateUser } from "@/app/actions/admin"
+import { impersonateUser } from "@/actions/admin"
 import { useTableHandlers } from "@/hooks/use-table-handlers"
 
 // Create a function to generate columns

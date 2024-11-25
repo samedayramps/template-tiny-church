@@ -1,11 +1,11 @@
 "use client";
 
 import { withAdminProtection } from "@/components/hoc/with-admin-protection";
-import { createClientSupabaseClient } from "@/lib/supabase/client";
-import { UserRoleWithAuth } from '@/lib/supabase/types'
+import { createClientSupabaseClient } from "@/lib/data/supabase/client";
+import { UserRoleWithAuth } from '@/lib/data/supabase/types'
 import { createUserColumns } from "@/components/admin/users-table"
 import { DataTablePage } from "@/components/layouts/data-table-page";
-import { Database } from "@/lib/supabase/database.types";
+import { Database } from "@/lib/data/supabase/database.types";
 
 type ProfileWithTenant = Database['public']['Tables']['profiles']['Row'] & {
   tenants: Database['public']['Tables']['tenants']['Row'] | null;

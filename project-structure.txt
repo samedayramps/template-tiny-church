@@ -1,0 +1,153 @@
+.
+├── actions
+│   ├── admin.ts
+│   ├── auth.ts
+│   ├── subscription.ts
+│   ├── user.ts
+│   └── utils.ts
+├── app
+│   ├── admin
+│   │   ├── dashboard
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── tenants
+│   │   │   └── page.tsx
+│   │   └── users
+│   │       └── page.tsx
+│   ├── auth
+│   │   ├── callback
+│   │   │   └── route.ts
+│   │   ├── forgot-password
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── reset-password
+│   │   │   └── page.tsx
+│   │   ├── sign-in
+│   │   │   └── page.tsx
+│   │   └── sign-up
+│   │       └── page.tsx
+│   ├── dashboard
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── error.tsx
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   ├── loading.tsx
+│   ├── page.tsx
+│   └── public
+│       ├── favicon.png
+│       └── logo.svg
+├── components
+│   ├── admin
+│   │   ├── sidebar.tsx
+│   │   ├── tenants-table.tsx
+│   │   └── users-table.tsx
+│   ├── common
+│   │   ├── auth-card.tsx
+│   │   └── smtp-message.tsx
+│   ├── form-message.tsx
+│   ├── header-auth.tsx
+│   ├── hoc
+│   │   └── with-admin-protection.tsx
+│   ├── impersonation-banner.tsx
+│   ├── layouts
+│   │   ├── data-table-page.tsx
+│   │   └── impersonation-wrapper.tsx
+│   ├── logo.tsx
+│   ├── site-header.tsx
+│   ├── submit-button.tsx
+│   ├── subscribe-form.tsx
+│   ├── theme-switcher.tsx
+│   └── ui
+│       ├── alert-dialog.tsx
+│       ├── alert.tsx
+│       ├── avatar.tsx
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── checkbox.tsx
+│       ├── data-table
+│       │   ├── data-table-column-header.tsx
+│       │   ├── data-table-empty.tsx
+│       │   ├── data-table-error.tsx
+│       │   ├── data-table-header.tsx
+│       │   ├── data-table-pagination.tsx
+│       │   ├── data-table-toolbar.tsx
+│       │   ├── data-table-view-options.tsx
+│       │   ├── data-table.tsx
+│       │   └── table-skeleton.tsx
+│       ├── dialog.tsx
+│       ├── dropdown-menu.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── scroll-area.tsx
+│       ├── select.tsx
+│       ├── sheet.tsx
+│       ├── skeleton.tsx
+│       ├── table.tsx
+│       ├── toast.tsx
+│       └── toaster.tsx
+├── components.json
+├── hooks
+│   ├── use-impersonation.ts
+│   ├── use-media-query.ts
+│   ├── use-table-handlers.ts
+│   ├── use-table-state.ts
+│   └── use-toast.ts
+├── lib
+│   ├── auth
+│   │   └── middleware
+│   │       ├── handlers
+│   │       │   ├── auth.ts
+│   │       │   └── impersonation.ts
+│   │       └── utils
+│   │           └── supabase.ts
+│   ├── data
+│   │   └── supabase
+│   │       ├── auth.ts
+│   │       ├── check-env-vars.ts
+│   │       ├── client.ts
+│   │       ├── database.types.ts
+│   │       ├── impersonation.ts
+│   │       ├── routes.ts
+│   │       ├── server.ts
+│   │       └── types.ts
+│   ├── middleware
+│   ├── utils.ts
+│   └── validations
+│       └── data-table.ts
+├── middleware.ts
+├── next-env.d.ts
+├── next.config.js
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── project-structure.txt
+├── supabase
+│   ├── config.toml
+│   └── migrations
+│       ├── 20241124045214_remote_schema.sql
+│       ├── add_auth_policies.sql
+│       ├── add_impersonation.sql
+│       ├── add_policies.sql
+│       ├── add_tenant_admin_trigger.sql
+│       ├── check_constraints.sql
+│       ├── create_profiles.sql
+│       ├── fix_get_active_impersonation.sql
+│       ├── fix_policies.sql
+│       ├── update_admin_policies.sql
+│       ├── update_profiles.sql
+│       ├── update_profiles_metadata.sql
+│       ├── verify_policies.sql
+│       ├── verify_schema.sql
+│       └── verify_setup.sql
+├── tailwind.config.ts
+├── tsconfig.json
+├── types
+│   └── data-table.ts
+└── utils
+    ├── cn.ts
+    └── utils.ts
+
+36 directories, 115 files

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ImpersonationBanner } from "../impersonation-banner";
 import { createBrowserClient } from "@supabase/ssr";
-import { Database } from "@/lib/supabase/database.types";
+import { Database } from "@/lib/data/supabase/database.types";
 import { usePathname } from 'next/navigation';
 
 interface ImpersonationState {

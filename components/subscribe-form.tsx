@@ -3,7 +3,7 @@
 import { useToast } from "@/hooks/use-toast";
 import { SubmitButton } from "@/components/submit-button";
 import { Input } from "@/components/ui/input";
-import { subscribeAction } from "@/app/actions/subscription";
+import { subscribeAction } from "@/actions/subscription";
 
 export function SubscribeForm() {
   const { toast } = useToast();

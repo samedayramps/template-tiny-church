@@ -1,11 +1,11 @@
 "use server";
 
 import { encodedRedirect } from "@/utils/utils";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient } from "@/lib/data/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { ROLE_ROUTES } from '@/lib/supabase/routes';
-import { Database } from '@/lib/supabase/database.types';
+import { ROLE_ROUTES } from '@/lib/data/supabase/routes';
+import { Database } from '@/lib/data/supabase/database.types';
 
 export async function signUpAction(formData: FormData) {
   const email = formData.get("email")?.toString();

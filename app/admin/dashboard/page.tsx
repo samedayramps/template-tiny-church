@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { createServerSupabaseClient } from "@/lib/supabase/server"
+import { createServerSupabaseClient } from "@/lib/data/supabase/server"
 import { Users, UserCheck, UserPlus, ArrowUpRight } from "lucide-react"
 
 export default async function AdminDashboard() {

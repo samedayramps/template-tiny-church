@@ -1,7 +1,7 @@
 "use server";
 
 import { encodedRedirect } from "@/utils/utils";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient } from "@/lib/data/supabase/server";
 
 export async function updateUserProfile(formData: FormData) {
   const supabase = await createServerSupabaseClient();

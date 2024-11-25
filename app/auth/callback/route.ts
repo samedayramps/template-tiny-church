@@ -1,6 +1,6 @@
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { createServerSupabaseClient } from "@/lib/data/supabase/server";
 import { NextResponse } from "next/server";
-import { ROLE_ROUTES } from '@/lib/supabase/routes'
+import { ROLE_ROUTES } from '@/lib/data/supabase/routes'
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
