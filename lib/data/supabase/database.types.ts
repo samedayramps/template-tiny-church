@@ -181,6 +181,7 @@ export type Database = {
         Row: {
           admin_id: string | null
           created_at: string | null
+          domain: string
           id: string
           name: string
           updated_at: string | null
@@ -188,6 +189,7 @@ export type Database = {
         Insert: {
           admin_id?: string | null
           created_at?: string | null
+          domain: string
           id?: string
           name: string
           updated_at?: string | null
@@ -195,6 +197,7 @@ export type Database = {
         Update: {
           admin_id?: string | null
           created_at?: string | null
+          domain?: string
           id?: string
           name?: string
           updated_at?: string | null

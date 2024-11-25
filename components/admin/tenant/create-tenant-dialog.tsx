@@ -38,6 +38,11 @@ import { useRouter } from "next/navigation"
 const formSchema = z.object({
   name: z.string().min(1, "Tenant name is required"),
   adminId: z.string().uuid("Invalid admin ID"),
+  domain: z.string()
+    .min(1, "Domain is required")
+    .regex(/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i, {
+      message: "Please enter a valid domain name (e.g. example.com)"
+    })
 })
 
 export function CreateTenantDialog() {
@@ -71,6 +76,7 @@ export function CreateTenantDialog() {
     defaultValues: {
       name: "",
       adminId: "",
+      domain: "",
     },
   })
 
@@ -87,30 +93,40 @@ export function CreateTenantDialog() {
       const formData = new FormData()
       formData.append('name', values.name)
       formData.append('adminId', values.adminId)
+      formData.append('domain', values.domain)
       
-      await createTenant(formData)
-      
-      // Reset form and close dialog before refresh
+      // Reset form and close dialog before the action
       form.reset()
       setOpen(false)
+      
+      // Execute the server action
+      await createTenant(formData)
       
       // Refresh the page data
       router.refresh()
     } catch (error) {
+      setIsLoading(false)
+      
+      // Check if this is a redirect response
       if (error && 
           typeof error === 'object' && 
           'digest' in error && 
-          typeof (error as { digest: string }).digest === 'string' && 
-          (error as { digest: string }).digest.includes('success')) {
-        // Success redirect, close the dialog
-        form.reset()
-        setOpen(false)
-        throw error
+          typeof (error as { digest: string }).digest === 'string') {
+        const digest = (error as { digest: string }).digest
+        
+        // Only throw the error if it's a success redirect
+        if (digest.includes('success')) {
+          throw error
+        }
+        
+        // For error redirects, reopen the dialog and show the form
+        setOpen(true)
+        form.reset(values) // Restore the form values
+      } else {
+        console.error('Error creating tenant:', error)
+        setOpen(true)
+        form.reset(values) // Restore the form values
       }
-      
-      console.error('Error creating tenant:', error)
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -125,6 +141,9 @@ export function CreateTenantDialog() {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create New Tenant</DialogTitle>
+          <DialogDescription>
+            Create a new tenant organization with a unique name and domain.
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -141,12 +160,38 @@ export function CreateTenantDialog() {
                 </FormItem>
               )}
             />
+            
+            <FormField
+              control={form.control}
+              name="domain"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Domain</FormLabel>
+                  <FormControl>
+                    <Input 
+                      placeholder="example.com" 
+                      {...field}
+                      onChange={(e) => {
+                        // Only convert to lowercase, allow dots
+                        const value = e.target.value.toLowerCase();
+                        field.onChange(value);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                  <p className="text-sm text-muted-foreground">
+                    Enter a bare domain name without http:// or www (e.g. example.com)
+                  </p>
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="adminId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tenant User</FormLabel>
+                  <FormLabel>Tenant Admin</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
@@ -166,6 +211,7 @@ export function CreateTenantDialog() {
                 </FormItem>
               )}
             />
+            
             <DialogFooter>
               <Button 
                 type="submit" 

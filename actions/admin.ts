@@ -117,11 +117,19 @@ export async function createTenant(formData: FormData) {
   const name = formData.get('name') as string;
   const adminEmail = formData.get('admin_email') as string;
   
+  // Generate a domain from the name (or get it from formData if you have a domain field)
+  const domain = formData.get('domain') as string || 
+                name.toLowerCase()
+                   .replace(/[^a-z0-9]/g, '-') // Replace non-alphanumeric chars with hyphens
+                   .replace(/-+/g, '-')        // Replace multiple hyphens with single hyphen
+                   .replace(/^-|-$/g, '');     // Remove leading/trailing hyphens
+  
   // Start a transaction
   const { data: tenant, error: tenantError } = await supabase
     .from('tenants')
     .insert({ 
       name,
+      domain,
       admin_id: user.id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
@@ -130,6 +138,7 @@ export async function createTenant(formData: FormData) {
     .single();
 
   if (tenantError) {
+    console.error('[Create Tenant] Error:', tenantError);
     return encodedRedirect("error", "/admin/tenants", "Failed to create tenant");
   }
 

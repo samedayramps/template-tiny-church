@@ -17,19 +17,22 @@ export async function deleteTenant(tenantId: string) {
       console.error('[Tenant Deletion] Admin check failed:', {
         error: 'Not authorized'
       });
-      redirect('/admin/tenants?error=' + encodeURIComponent('Not authorized'));
+      return redirect('/admin/tenants?error=' + encodeURIComponent('Not authorized'));
     }
 
     // First, update all users in this tenant to have no tenant
     console.log('[Tenant Deletion] Updating user profiles');
     const { error: profilesError } = await supabase
       .from('profiles')
-      .update({ tenant_id: null })
+      .update({ 
+        tenant_id: null,
+        updated_at: new Date().toISOString()
+      })
       .eq('tenant_id', tenantId);
 
     if (profilesError) {
       console.error('[Tenant Deletion] Profile update failed:', profilesError);
-      redirect('/admin/tenants?error=Failed to update user profiles');
+      return redirect('/admin/tenants?error=Failed to update user profiles');
     }
 
     // Then delete the tenant
@@ -41,17 +44,22 @@ export async function deleteTenant(tenantId: string) {
 
     if (tenantError) {
       console.error('[Tenant Deletion] Tenant deletion failed:', tenantError);
-      redirect('/admin/tenants?error=Failed to delete tenant');
+      return redirect('/admin/tenants?error=Failed to delete tenant');
     }
 
     console.log('[Tenant Deletion] Tenant successfully deleted');
     
-    // Revalidate the tenants page and redirect
+    // Revalidate the tenants page
     revalidatePath('/admin/tenants');
     
     // Log the successful redirect
-    console.log('[Tenant Deletion] Redirecting after successful deletion');
-    redirect('/admin/tenants?success=Tenant deleted successfully');
+    console.log('[Tenant Deletion] Redirecting after successful deletion', {
+      timestamp: new Date().toISOString(),
+      redirect: '/admin/tenants?success=Tenant deleted successfully',
+      tenantId
+    });
+    
+    return redirect('/admin/tenants?success=Tenant deleted successfully');
 
   } catch (error) {
     // Check if this is a Next.js redirect
@@ -76,6 +84,6 @@ export async function deleteTenant(tenantId: string) {
       tenantId
     });
 
-    redirect('/admin/tenants?error=Failed to delete tenant');
+    return redirect('/admin/tenants?error=Failed to delete tenant');
   }
 } 

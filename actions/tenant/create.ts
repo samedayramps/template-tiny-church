@@ -10,6 +10,12 @@ import { z } from "zod";
 const createTenantSchema = z.object({
   name: z.string().min(1, "Tenant name is required"),
   adminId: z.string().uuid("Invalid admin ID"),
+  domain: z.string()
+    .min(1, "Domain is required")
+    .regex(/^[a-z0-9]([a-z0-9.-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/i, {
+      message: "Please enter a valid domain name (e.g. example.com)"
+    })
+    .transform(val => val.toLowerCase())
 });
 
 export async function createTenant(formData: FormData) {
@@ -20,6 +26,7 @@ export async function createTenant(formData: FormData) {
     formData: {
       name: formData.get('name'),
       adminId: formData.get('adminId'),
+      domain: formData.get('domain'),
     }
   });
   
@@ -29,6 +36,7 @@ export async function createTenant(formData: FormData) {
     const input = createTenantSchema.parse({
       name: formData.get('name'),
       adminId: formData.get('adminId'),
+      domain: formData.get('domain'),
     });
     console.log('[Tenant Creation] Input validation successful', { input });
 
@@ -40,38 +48,38 @@ export async function createTenant(formData: FormData) {
         error: 'Not authorized',
         success: currentUser.success
       });
-      redirect('/admin/tenants?error=Not authorized');
+      return redirect('/admin/tenants?error=Not authorized');
     }
     console.log('[Tenant Creation] Admin check passed', {
       userId: currentUser.data.id
     });
 
-    // Check if tenant name already exists
+    // Check if tenant name or domain already exists
     console.log('[Tenant Creation] Checking for existing tenant', {
-      tenantName: input.name
+      tenantName: input.name,
+      domain: input.domain
     });
     const { data: existingTenant, error: existingTenantError } = await supabase
       .from('tenants')
       .select('id')
-      .eq('name', input.name)
+      .or(`name.eq.${input.name},domain.eq.${input.domain}`)
       .single();
 
     if (existingTenantError && existingTenantError.code !== 'PGRST116') {
       console.error('[Tenant Creation] Error checking existing tenant:', {
         error: existingTenantError,
-        tenantName: input.name
+        input
       });
-      redirect('/admin/tenants?error=Failed to check existing tenant');
+      return redirect('/admin/tenants?error=Failed to check existing tenant');
     }
 
     if (existingTenant) {
-      console.warn('[Tenant Creation] Tenant name already exists', {
-        tenantName: input.name,
+      console.warn('[Tenant Creation] Tenant name or domain already exists', {
+        input,
         existingTenantId: existingTenant.id
       });
-      redirect('/admin/tenants?error=A tenant with this name already exists');
+      return redirect('/admin/tenants?error=A tenant with this name or domain already exists');
     }
-    console.log('[Tenant Creation] Tenant name is available');
 
     // Check if user exists and verify they're not already assigned to a tenant
     console.log('[Tenant Creation] Verifying user', {
@@ -88,7 +96,7 @@ export async function createTenant(formData: FormData) {
         error: userError,
         userId: input.adminId
       });
-      redirect('/admin/tenants?error=Failed to verify user');
+      return redirect('/admin/tenants?error=Failed to verify user');
     }
 
     if (userProfile.role !== 'user') {
@@ -96,7 +104,7 @@ export async function createTenant(formData: FormData) {
         userId: input.adminId,
         actualRole: userProfile.role
       });
-      redirect('/admin/tenants?error=Selected profile must be a user');
+      return redirect('/admin/tenants?error=Selected profile must be a user');
     }
 
     if (userProfile.tenant_id) {
@@ -104,28 +112,53 @@ export async function createTenant(formData: FormData) {
         userId: input.adminId,
         existingTenantId: userProfile.tenant_id
       });
-      redirect('/admin/tenants?error=Selected user is already assigned to a tenant');
+      return redirect('/admin/tenants?error=Selected user is already assigned to a tenant');
     }
 
     console.log('[Tenant Creation] User verification successful');
 
-    // Create tenant using RPC
-    console.log('[Tenant Creation] Creating tenant via RPC', {
-      tenantName: input.name,
-      userId: input.adminId
-    });
+    // Create tenant
     const { data: newTenant, error: tenantError } = await supabase
-      .rpc('create_tenant', {
-        tenant_name: input.name,
-        admin_user_id: input.adminId
-      });
+      .from('tenants')
+      .insert({
+        name: input.name,
+        domain: input.domain,
+        admin_id: input.adminId,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
 
     if (tenantError) {
-      console.error('[Tenant Creation] RPC error creating tenant:', {
+      console.error('[Tenant Creation] Error creating tenant:', {
         error: tenantError,
         input
       });
-      redirect('/admin/tenants?error=Failed to create tenant');
+      return redirect('/admin/tenants?error=Failed to create tenant');
+    }
+
+    // Update the admin's profile
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ 
+        tenant_id: newTenant.id,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', input.adminId);
+
+    if (profileError) {
+      console.error('[Tenant Creation] Error updating admin profile:', {
+        error: profileError,
+        input,
+        tenantId: newTenant.id
+      });
+      // Cleanup: delete the tenant since we couldn't update the admin
+      await supabase
+        .from('tenants')
+        .delete()
+        .eq('id', newTenant.id);
+      return redirect('/admin/tenants?error=Failed to update admin profile');
     }
 
     console.log('[Tenant Creation] Tenant created successfully', {
@@ -135,7 +168,7 @@ export async function createTenant(formData: FormData) {
 
     // Revalidate and redirect
     revalidatePath('/admin/tenants');
-    redirect('/admin/tenants?success=Tenant created successfully');
+    return redirect('/admin/tenants?success=Tenant created successfully');
 
   } catch (error) {
     if (error && 
@@ -164,11 +197,12 @@ export async function createTenant(formData: FormData) {
         formData: {
           name: formData.get('name'),
           adminId: formData.get('adminId'),
+          domain: formData.get('domain'),
         }
       });
-      redirect('/admin/tenants?error=Invalid input data');
+      return redirect('/admin/tenants?error=Invalid input data');
     }
 
-    redirect('/admin/tenants?error=Failed to create tenant');
+    return redirect('/admin/tenants?error=Failed to create tenant');
   }
 } 
