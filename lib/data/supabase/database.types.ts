@@ -244,13 +244,29 @@ export type Database = {
         }
         Returns: string
       }
-      create_tenant: {
-        Args: {
-          tenant_name: string
-          admin_user_id: string
-        }
-        Returns: Json
-      }
+      create_tenant:
+        | {
+            Args: {
+              tenant_name: string
+              admin_user_id: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              tenant_name: string
+              admin_user_id: string
+              tenant_domain: string
+            }
+            Returns: {
+              admin_id: string | null
+              created_at: string | null
+              domain: string
+              id: string
+              name: string
+              updated_at: string | null
+            }[]
+          }
       create_tenant_with_admin: {
         Args: {
           tenant_name: string

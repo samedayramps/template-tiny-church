@@ -11,11 +11,11 @@ export default async function AdminLayout({
   const { data: { user } } = await supabase.auth.getUser();
 
   return (
-    <div className="flex h-screen">
-      <Sidebar className="w-64 hidden md:block" />
+    <div className="flex h-[calc(100vh-3.5rem)]">
+      <Sidebar className="hidden md:block" />
       <div className="flex-1 flex flex-col overflow-hidden">
         <ImpersonationWrapper>
-          <main className="flex-1 overflow-y-auto p-6">
+          <main className="flex-1 overflow-y-auto p-6 md:ml-0 transition-all duration-300">
             {children}
           </main>
         </ImpersonationWrapper>

@@ -1,3 +1,4 @@
+import { ReactNode } from "react"
 import { ColumnDef, Table, SortingState, VisibilityState, ColumnFiltersState } from "@tanstack/react-table"
 import { z } from "zod"
 
@@ -6,7 +7,7 @@ export interface DataTableProps<TData, TValue> {
   data: TData[]
   
   // Search and filtering
-  searchKey?: string
+  searchKey?: keyof TData
   searchPlaceholder?: string
   filterableColumns?: {
     id: string
@@ -31,6 +32,7 @@ export interface DataTableProps<TData, TValue> {
   deleteModalTitle?: string
   deleteModalDescription?: string
   editModalTitle?: string
+  editModalContent?: (item: TData) => ReactNode
   
   // Table state persistence
   storageKey?: string
@@ -49,15 +51,11 @@ export interface DataTableProps<TData, TValue> {
   headerActions?: React.ReactNode
   emptyState?: React.ReactNode
   loadingState?: React.ReactNode
-}
-
-export interface DataTableToolbarProps<TData> {
-  table: Table<TData>
-  searchKey?: string
-  searchPlaceholder?: string
-  filterableColumns?: DataTableProps<TData, any>["filterableColumns"]
-  headerActions?: React.ReactNode
-  createAction?: () => void
+  
+  // Add column visibility props
+  columnVisibility?: Record<string, boolean>
+  onColumnVisibilityChange?: (columnId: string, isVisible: boolean) => void
+  onSearch?: (term: string) => void
 }
 
 export interface DataTablePaginationProps<TData> {
@@ -72,3 +70,9 @@ export const DataTableActionSchema = z.object({
 })
 
 export type DataTableAction = z.infer<typeof DataTableActionSchema> 
+
+// Add a new interface for the error component
+export interface DataTableErrorProps {
+  error: Error
+  reset: () => void
+} 

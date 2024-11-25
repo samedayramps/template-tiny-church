@@ -8,8 +8,10 @@ import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-col
 import { Button } from "@/components/ui/button"
 import { formatDate } from "@/lib/utils"
 import { useTableHandlers } from "@/hooks/use-table-handlers"
+import { useTableState } from "@/hooks/use-table-state"
 
 interface TenantData {
+  id: string
   tenant_id: string
   tenant_name: string
   tenant_domain: string
@@ -22,10 +24,7 @@ interface TenantData {
 }
 
 // Create a function to generate columns, similar to users-table
-export function createTenantColumns(
-  onEdit: (tenant: TenantData) => void,
-  onDelete: (tenant: TenantData) => void
-): ColumnDef<TenantData, any>[] {
+export function createTenantColumns(): ColumnDef<TenantData>[] {
   return [
     {
       id: "tenant_name",
@@ -63,52 +62,36 @@ export function createTenantColumns(
       cell: ({ row }) => formatDate(row.original.tenant_created_at),
     },
     {
-      id: "actions",
+      accessorKey: "tenant_domain",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Domain" />
+      ),
       cell: ({ row }) => {
-        const tenant = row.original
+        const domain = row.getValue("tenant_domain") as string
         return (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(tenant)}
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onDelete(tenant)}
-              className="text-destructive hover:text-destructive"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center">
+            {domain ? (
+              <a 
+                href={`https://${domain}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline"
+              >
+                {domain}
+              </a>
+            ) : (
+              <span className="text-muted-foreground">No domain</span>
+            )}
           </div>
         )
-      }
-    }
+      },
+    },
   ]
 }
 
 export function TenantsDataTable({ data }: { data: TenantData[] }) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [selectedTenant, setSelectedTenant] = useState<TenantData | null>(null)
-  const { handleEdit, handleDelete, isPending } = useTableHandlers<TenantData>()
-
-  const columns = useMemo(
-    () => createTenantColumns(
-      (tenant) => {
-        setSelectedTenant(tenant)
-        setIsEditing(true)
-      },
-      (tenant) => {
-        setSelectedTenant(tenant)
-        setIsDeleting(true)
-      }
-    ),
-    []
-  )
+  const columns = useMemo(() => createTenantColumns(), [])
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
 
   return (
     <DataTable
@@ -118,24 +101,24 @@ export function TenantsDataTable({ data }: { data: TenantData[] }) {
       searchPlaceholder="Filter tenants..."
       pageSize={10}
       deleteAction={async (tenant) => {
-        await handleDelete(tenant, async (tenantData) => {
-          // Implement your delete logic here
-          console.log("Deleting tenant:", tenantData)
-        })
+        console.log("Deleting tenant:", tenant)
       }}
       editAction={async (tenant) => {
-        await handleEdit(tenant, async (tenantData) => {
-          // Implement your edit logic here
-          console.log("Editing tenant:", tenantData)
-        })
+        console.log("Editing tenant:", tenant)
       }}
       viewAction={(tenant) => {
-        // View tenant logic
         console.log("View tenant:", tenant)
       }}
       deleteModalTitle="Delete Tenant"
       deleteModalDescription="This will permanently delete the tenant and remove all associated data."
       editModalTitle="Edit Tenant"
+      columnVisibility={columnVisibility}
+      onColumnVisibilityChange={(columnId, isVisible) => {
+        setColumnVisibility(prev => ({
+          ...prev,
+          [columnId]: isVisible
+        }))
+      }}
     />
   )
 }

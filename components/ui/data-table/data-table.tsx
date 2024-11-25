@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -13,12 +13,14 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
+  OnChangeFn,
 } from "@tanstack/react-table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/hooks/use-toast"
 import { Suspense } from "react"
+import { Pencil, Eye, Trash2 } from "lucide-react"
 
 import {
   Table,
@@ -29,10 +31,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-import { DataTableToolbar } from "./data-table-toolbar"
 import { DataTablePagination } from "./data-table-pagination"
 import { DataTableProps } from "@/types/data-table"
 import { TableSkeleton } from "./table-skeleton"
+import { cn } from "@/lib/utils"
 
 export function DataTable<TData, TValue>({
   columns,
@@ -47,65 +49,114 @@ export function DataTable<TData, TValue>({
   deleteModalTitle = "Are you absolutely sure?",
   deleteModalDescription = "This action cannot be undone.",
   editModalTitle = "Edit Item",
+  editModalContent,
   loadingState,
+  columnVisibility,
+  onColumnVisibilityChange,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
-  const [isEditing, setIsEditing] = React.useState(false)
-  const [isDeleting, setIsDeleting] = React.useState(false)
-  const [selectedItem, setSelectedItem] = React.useState<TData | null>(null)
-
-  // Memoized handlers
-  const handleEdit = useCallback((item: TData) => {
-    setSelectedItem(item)
-    setIsEditing(true)
-  }, [])
-
-  const handleDelete = useCallback((item: TData) => {
-    setSelectedItem(item)
-    setIsDeleting(true)
-  }, [])
-
-  const handleView = useCallback((item: TData) => {
-    if (viewAction) {
-      viewAction(item)
-    }
-  }, [viewAction])
-
-  // Memoize core table functions
-  const getCoreRowModelMemo = useCallback(getCoreRowModel(), [])
-  const getFilteredRowModelMemo = useCallback(getFilteredRowModel(), [])
-  const getPaginationRowModelMemo = useCallback(getPaginationRowModel(), [])
-  const getSortedRowModelMemo = useCallback(getSortedRowModel(), [])
-
-  // Memoize table state
-  const tableState = useMemo(
-    () => ({
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    }),
-    [sorting, columnFilters, columnVisibility, rowSelection]
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [rowSelection, setRowSelection] = useState({})
+  const [selectedItem, setSelectedItem] = useState<TData | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [localColumnVisibility, setLocalColumnVisibility] = useState<VisibilityState>(
+    columnVisibility || {}
   )
 
-  // Create table instance with proper typing
+  // Handle column visibility changes
+  const handleColumnVisibilityChange: OnChangeFn<VisibilityState> = useCallback(
+    (updater) => {
+      const newVisibility = typeof updater === 'function'
+        ? updater(localColumnVisibility)
+        : updater
+
+      setLocalColumnVisibility(newVisibility)
+      
+      if (onColumnVisibilityChange) {
+        Object.entries(newVisibility).forEach(([columnId, isVisible]) => {
+          if (typeof isVisible === 'boolean') {
+            onColumnVisibilityChange(columnId, isVisible)
+          }
+        })
+      }
+    },
+    [localColumnVisibility, onColumnVisibilityChange]
+  )
+
+  // Move the columnsWithActions declaration before the table configuration
+  const columnsWithActions = useMemo(() => {
+    if (editAction || deleteAction || viewAction) {
+      return [
+        ...columns,
+        {
+          id: "actions",
+          cell: ({ row }) => {
+            const item = row.original
+            return (
+              <div className="flex items-center justify-end gap-2">
+                {editAction && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setSelectedItem(item)
+                      setIsEditing(true)
+                    }}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                )}
+                {viewAction && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => viewAction(item)}
+                    className="h-8 w-8 p-0"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                )}
+                {deleteAction && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setSelectedItem(item)
+                      setIsDeleting(true)
+                    }}
+                    className="h-8 w-8 p-0 text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            )
+          }
+        }
+      ]
+    }
+    return columns
+  }, [columns, editAction, deleteAction, viewAction])
+
   const table = useReactTable({
     data,
-    columns,
-    pageCount: Math.ceil(data.length / pageSize),
-    state: tableState,
-    enableRowSelection: true,
-    onRowSelectionChange: setRowSelection,
+    columns: columnsWithActions,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    getCoreRowModel: getCoreRowModelMemo,
-    getFilteredRowModel: getFilteredRowModelMemo,
-    getPaginationRowModel: getPaginationRowModelMemo,
-    getSortedRowModel: getSortedRowModelMemo,
+    onColumnVisibilityChange: handleColumnVisibilityChange,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility: localColumnVisibility,
+      rowSelection,
+    },
   })
 
   // Memoize row rendering function
@@ -145,19 +196,14 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <DataTableToolbar<TData>
-        table={table}
-        searchKey={searchKey}
-        searchPlaceholder={searchPlaceholder}
-      />
       <Suspense fallback={loadingState || <TableSkeleton />}>
         <div className="rounded-md border">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
+                <TableRow key={headerGroup.id} className="bg-muted/50">
                   {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="h-10 px-2 text-xs">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -181,12 +227,16 @@ export function DataTable<TData, TValue>({
             <DialogHeader>
               <DialogTitle>{editModalTitle}</DialogTitle>
             </DialogHeader>
-            <div className="flex justify-end gap-2 py-3">
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={async () => {
+            
+            {/* Render the edit form content */}
+            {selectedItem && editModalContent ? (
+              editModalContent(selectedItem)
+            ) : (
+              <div className="flex justify-end gap-2 py-3">
+                <Button variant="outline" onClick={() => setIsEditing(false)}>
+                  Cancel
+                </Button>
+                <Button onClick={async () => {
                   if (!selectedItem || !editAction) return
                   try {
                     await editAction(selectedItem)
@@ -202,11 +252,11 @@ export function DataTable<TData, TValue>({
                       variant: "destructive",
                     })
                   }
-                }}
-              >
-                Save Changes
-              </Button>
-            </div>
+                }}>
+                  Save Changes
+                </Button>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       )}
