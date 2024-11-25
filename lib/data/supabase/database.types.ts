@@ -179,21 +179,21 @@ export type Database = {
       }
       tenants: {
         Row: {
-          admin_id: string
+          admin_id: string | null
           created_at: string | null
           id: string
           name: string
           updated_at: string | null
         }
         Insert: {
-          admin_id: string
+          admin_id?: string | null
           created_at?: string | null
           id?: string
           name: string
           updated_at?: string | null
         }
         Update: {
-          admin_id?: string
+          admin_id?: string | null
           created_at?: string | null
           id?: string
           name?: string

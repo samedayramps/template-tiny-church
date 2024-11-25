@@ -2,7 +2,6 @@
 
 import { createServerSupabaseClient } from "@/lib/data/supabase/server";
 import { adminGuard } from "@/lib/auth/guards";
-import { encodedRedirect } from "@/utils/utils";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -16,6 +15,29 @@ export async function deleteUser(userId: string) {
     const currentUser = await adminGuard();
     if (!currentUser.success) {
       redirect('/admin/users?error=' + encodeURIComponent(currentUser.error));
+    }
+
+    // Check if user is a tenant admin and update tenant if necessary
+    console.log('[User Deletion] Checking for tenant admin status');
+    const { data: adminTenants } = await supabase
+      .from('tenants')
+      .select('id')
+      .eq('admin_id', userId);
+
+    if (adminTenants && adminTenants.length > 0) {
+      console.log('[User Deletion] User is admin for tenants:', adminTenants);
+      const { error: tenantError } = await supabase
+        .from('tenants')
+        .update({ 
+          admin_id: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('admin_id', userId);
+
+      if (tenantError) {
+        console.error('[User Deletion] Failed to update tenant admin:', tenantError);
+        redirect('/admin/users?error=Failed to update tenant admin');
+      }
     }
 
     // Delete in correct order
@@ -51,8 +73,9 @@ export async function deleteUser(userId: string) {
 
     console.log('[User Deletion] User successfully deleted');
     
-    // Revalidate the users page and redirect
+    // Revalidate both users and tenants pages since tenant data might have changed
     revalidatePath('/admin/users');
+    revalidatePath('/admin/tenants');
     redirect('/admin/users?success=User deleted successfully');
 
   } catch (error) {
@@ -64,7 +87,6 @@ export async function deleteUser(userId: string) {
         'digest' in error && 
         typeof error.digest === 'string' && 
         error.digest.startsWith('NEXT_REDIRECT')) {
-      // This is an intentional redirect, not an error
       throw error;
     }
 

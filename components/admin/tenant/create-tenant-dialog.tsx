@@ -42,27 +42,27 @@ const formSchema = z.object({
 
 export function CreateTenantDialog() {
   const [open, setOpen] = useState(false)
-  const [admins, setAdmins] = useState<{ id: string; email: string }[]>([])
+  const [users, setUsers] = useState<{ id: string; email: string }[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   
-  // Fetch available admin users
+  // Fetch available users
   useEffect(() => {
-    const fetchAdmins = async () => {
+    const fetchUsers = async () => {
       const supabase = createClientSupabaseClient()
       const { data } = await supabase
         .from('profiles')
         .select('id, email')
-        .eq('role', 'admin')
-        .is('tenant_id', null) // Only get admins not assigned to a tenant
+        .eq('role', 'user')
+        .is('tenant_id', null)
       
       if (data) {
-        setAdmins(data)
+        setUsers(data)
       }
     }
     
     if (open) {
-      fetchAdmins()
+      fetchUsers()
     }
   }, [open])
 
@@ -118,16 +118,13 @@ export function CreateTenantDialog() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          New Tenant
+          <Plus className="h-4 w-4 mr-2" />
+          Create Tenant
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Tenant</DialogTitle>
-          <DialogDescription>
-            Create a new tenant and assign an admin user.
-          </DialogDescription>
+          <DialogTitle>Create New Tenant</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -149,18 +146,18 @@ export function CreateTenantDialog() {
               name="adminId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Admin User</FormLabel>
+                  <FormLabel>Tenant User</FormLabel>
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select an admin" />
+                      <SelectValue placeholder="Select a user" />
                     </SelectTrigger>
                     <SelectContent>
-                      {admins.map((admin) => (
-                        <SelectItem key={admin.id} value={admin.id}>
-                          {admin.email}
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.email}
                         </SelectItem>
                       ))}
                     </SelectContent>

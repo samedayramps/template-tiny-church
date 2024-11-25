@@ -3,10 +3,10 @@
 import { withAdminProtection } from "@/components/hoc/with-admin-protection";
 import { createClientSupabaseClient } from "@/lib/data/supabase/client";
 import { UserRoleWithAuth } from '@/lib/data/supabase/types'
-import { createUserColumns } from "@/components/admin/users-table"
+import { createUserColumns } from "@/components/admin/user/users-table"
 import { DataTablePage } from "@/components/layouts/data-table-page";
 import { Database } from "@/lib/data/supabase/database.types";
-import { CreateUserDialog } from "@/components/admin/create-user-dialog";
+import { CreateUserDialog } from "@/components/admin/user/create-user-dialog";
 import { useSearchParams } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";

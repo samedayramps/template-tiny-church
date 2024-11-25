@@ -3,12 +3,12 @@
 import { withAdminProtection } from "@/components/hoc/with-admin-protection";
 import { ImpersonationWrapper } from "@/components/layouts/impersonation-wrapper";
 import { createClientSupabaseClient } from "@/lib/data/supabase/client";
-import { TenantsDataTable } from "@/components/admin/tenants-table";
+import { TenantsDataTable } from "@/components/admin/tenant/tenants-table";
 import { useEffect, useState } from "react";
 import { Database } from "@/lib/data/supabase/database.types";
 import { useSearchParams } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast";
-import { CreateTenantDialog } from "@/components/admin/create-tenant-dialog";
+import { CreateTenantDialog } from "@/components/admin/tenant/create-tenant-dialog";
 
 // Define types for the data structure returned from Supabase
 type TenantWithProfile = {

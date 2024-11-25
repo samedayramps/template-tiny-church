@@ -73,53 +73,46 @@ export async function createTenant(formData: FormData) {
     }
     console.log('[Tenant Creation] Tenant name is available');
 
-    // Check if admin exists and verify role
-    console.log('[Tenant Creation] Verifying admin user', {
-      adminId: input.adminId
+    // Check if user exists and verify they're not already assigned to a tenant
+    console.log('[Tenant Creation] Verifying user', {
+      userId: input.adminId
     });
-    const { data: adminProfile, error: adminError } = await supabase
+    const { data: userProfile, error: userError } = await supabase
       .from('profiles')
       .select('id, role, tenant_id')
       .eq('id', input.adminId)
       .single();
 
-    if (adminError) {
-      console.error('[Tenant Creation] Error fetching admin profile:', {
-        error: adminError,
-        adminId: input.adminId
+    if (userError) {
+      console.error('[Tenant Creation] Error fetching user profile:', {
+        error: userError,
+        userId: input.adminId
       });
-      redirect('/admin/tenants?error=Failed to verify admin user');
+      redirect('/admin/tenants?error=Failed to verify user');
     }
 
-    if (!adminProfile) {
-      console.error('[Tenant Creation] Admin user not found', {
-        adminId: input.adminId
+    if (userProfile.role !== 'user') {
+      console.error('[Tenant Creation] Selected profile is not a user', {
+        userId: input.adminId,
+        actualRole: userProfile.role
       });
-      redirect('/admin/tenants?error=Admin user not found');
+      redirect('/admin/tenants?error=Selected profile must be a user');
     }
 
-    if (adminProfile.role !== 'admin') {
-      console.error('[Tenant Creation] User is not an admin', {
-        adminId: input.adminId,
-        actualRole: adminProfile.role
+    if (userProfile.tenant_id) {
+      console.error('[Tenant Creation] User already assigned to tenant', {
+        userId: input.adminId,
+        existingTenantId: userProfile.tenant_id
       });
-      redirect('/admin/tenants?error=Selected user is not an admin');
+      redirect('/admin/tenants?error=Selected user is already assigned to a tenant');
     }
 
-    if (adminProfile.tenant_id) {
-      console.error('[Tenant Creation] Admin already assigned to tenant', {
-        adminId: input.adminId,
-        existingTenantId: adminProfile.tenant_id
-      });
-      redirect('/admin/tenants?error=Selected admin is already assigned to a tenant');
-    }
-
-    console.log('[Tenant Creation] Admin verification successful');
+    console.log('[Tenant Creation] User verification successful');
 
     // Create tenant using RPC
     console.log('[Tenant Creation] Creating tenant via RPC', {
       tenantName: input.name,
-      adminId: input.adminId
+      userId: input.adminId
     });
     const { data: newTenant, error: tenantError } = await supabase
       .rpc('create_tenant', {
