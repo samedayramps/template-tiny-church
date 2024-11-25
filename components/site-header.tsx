@@ -24,7 +24,7 @@ interface SiteHeaderProps {
 
 export function SiteHeader({ user, initialRole, className }: SiteHeaderProps) {
   const [userRole, setUserRole] = useState<UserRole | undefined>(initialRole)
-  const [isLoading, setIsLoading] = useState(!initialRole)
+  const [isLoading, setIsLoading] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const pathname = usePathname()
   const isDesktop = useMediaQuery("(min-width: 768px)")
@@ -38,7 +38,10 @@ export function SiteHeader({ user, initialRole, className }: SiteHeaderProps) {
 
   useEffect(() => {
     const fetchUserRole = async () => {
-      if (initialRole || !user) return
+      if (initialRole || !user) {
+        setIsLoading(false)
+        return
+      }
 
       try {
         setIsLoading(true)
@@ -74,8 +77,8 @@ export function SiteHeader({ user, initialRole, className }: SiteHeaderProps) {
       )}>
         <div className="container flex h-14 items-center">
           <div className="flex flex-1 items-center justify-between">
-            {/* Mobile Menu Button */}
-            {!isDesktop && (
+            {/* Mobile Menu Button - Only show on admin routes */}
+            {isAdminRoute && !isDesktop && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -87,7 +90,7 @@ export function SiteHeader({ user, initialRole, className }: SiteHeaderProps) {
               </Button>
             )}
 
-            {/* Logo - Hide on admin routes on desktop */}
+            {/* Logo */}
             <Link 
               href="/" 
               className={cn(
@@ -119,39 +122,31 @@ export function SiteHeader({ user, initialRole, className }: SiteHeaderProps) {
         </div>
       </header>
 
-      {/* Mobile Menu Sheet */}
-      <Sheet 
-        open={isMobileMenuOpen} 
-        onOpenChange={setIsMobileMenuOpen}
-      >
-        <SheetContent 
-          side="left" 
-          className="p-0 w-[280px]"
+      {/* Mobile Menu Sheet - Only show on admin routes */}
+      {isAdminRoute && (
+        <Sheet 
+          open={isMobileMenuOpen} 
+          onOpenChange={setIsMobileMenuOpen}
         >
-          {/* Single header with close button */}
-          <div className="flex items-center justify-between border-b p-4">
-            <DialogTitle className="text-lg font-semibold">
-              Menu
-            </DialogTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsMobileMenuOpen(false)}
-              aria-label="Close menu"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <Sidebar 
-            className="border-none" 
-            onNavigate={() => setIsMobileMenuOpen(false)}
-            hideCloseButton
-          />
-        </SheetContent>
-      </Sheet>
+          <SheetContent 
+            side="left" 
+            className="p-0 w-[280px]"
+          >
+            <div className="flex items-center p-4">
+              <DialogTitle className="text-lg font-semibold">
+                Menu
+              </DialogTitle>
+            </div>
+            
+            <Sidebar 
+              className="border-none" 
+              onNavigate={() => setIsMobileMenuOpen(false)}
+            />
+          </SheetContent>
+        </Sheet>
+      )}
 
-      {/* Desktop Sidebar */}
+      {/* Desktop Sidebar - Only show on admin routes */}
       {isAdminRoute && isDesktop && (
         <Sidebar className="w-64 hidden md:block fixed inset-y-0 left-0 top-[3.5rem] z-30" />
       )}

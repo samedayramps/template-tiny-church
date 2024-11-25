@@ -1,11 +1,10 @@
-import { Database } from './database.types'
-
-type UserRole = Database['public']['Enums']['user_role']
+import { UserRole } from './types'
 
 export const ROLE_ROUTES: Record<UserRole, string> = {
-  admin: '/admin',
-  user: '/protected',
-  guest: '/welcome'
+  [UserRole.SUPER_ADMIN]: '/admin',
+  [UserRole.ADMIN]: '/admin',
+  [UserRole.USER]: '/protected',
+  [UserRole.GUEST]: '/protected'
 } as const
 
-export const DEFAULT_REDIRECT = '/' 
+export const DEFAULT_REDIRECT = '/protected' 

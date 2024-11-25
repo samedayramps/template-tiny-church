@@ -1,12 +1,24 @@
 import { Database } from './database.types'
 
 export type Tables = Database['public']['Tables']
+export type DBUserRole = Database['public']['Enums']['user_role']
 
+// Update enum to match database types
 export enum UserRole {
   SUPER_ADMIN = 'super_admin',
   ADMIN = 'admin',
   USER = 'user',
   GUEST = 'guest'
+}
+
+// Helper function to convert between enum and database type
+export const toDBRole = (role: UserRole): DBUserRole => {
+  switch (role) {
+    case UserRole.SUPER_ADMIN:
+      return 'admin' // Map super_admin to admin in database
+    default:
+      return role.toLowerCase() as DBUserRole
+  }
 }
 
 // Type for the user_roles table

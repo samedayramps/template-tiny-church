@@ -3,12 +3,12 @@ import { type NextRequest, NextResponse } from "next/server";
 import { Database } from "./database.types";
 
 export const handleImpersonation = async (request: NextRequest) => {
+  const response = NextResponse.next();
   const sessionId = request.cookies.get('impersonation_id')?.value;
+  
   if (!sessionId) {
-    return NextResponse.next();
+    return response;
   }
-
-  console.log('[Impersonation Middleware] Checking session:', sessionId);
 
   const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,6 +17,17 @@ export const handleImpersonation = async (request: NextRequest) => {
       cookies: {
         get(name: string) {
           return request.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: any) {
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+            sameSite: options.sameSite ?? 'lax'
+          });
+        },
+        remove(name: string) {
+          response.cookies.delete(name);
         },
       },
     }

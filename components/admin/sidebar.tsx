@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { signOutAction } from "@/app/actions/auth"
-import { Suspense } from "react"
+import { Suspense, useMemo } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useState, useEffect } from "react"
@@ -126,11 +126,9 @@ function NavLink({
 function SidebarContent({ 
   pathname,
   onNavigate,
-  hideCloseButton,
 }: { 
   pathname: string
   onNavigate?: () => void
-  hideCloseButton?: boolean
 }) {
   const [userRole, setUserRole] = useState<UserRole>()
   const [isLoading, setIsLoading] = useState(true)
@@ -168,21 +166,20 @@ function SidebarContent({
     fetchUserRole()
   }, [toast])
 
+  // Memoize filtered items
+  const filteredNavItems = useMemo(() => {
+    return mainNavItems.filter(item => {
+      if (!item.role) return true
+      if (!userRole) return true
+      return Array.isArray(item.role)
+        ? item.role.includes(userRole)
+        : item.role === userRole
+    })
+  }, [userRole])
+
   if (isLoading) {
     return <SidebarSkeleton />
   }
-
-  console.log('Current user role:', userRole)
-
-  const filteredNavItems = mainNavItems.filter(item => {
-    if (!item.role) return true
-    
-    if (!userRole) return true
-    
-    return Array.isArray(item.role)
-      ? item.role.includes(userRole)
-      : item.role === userRole
-  })
 
   return (
     <div className="flex flex-col h-full">
@@ -198,7 +195,7 @@ function SidebarContent({
       <ScrollArea className="flex-1 px-3">
         <Suspense fallback={<SidebarSkeleton />}>
           <div className="space-y-1">
-            {filteredNavItems.map((item) => (
+            {filteredNavItems.map((item: NavItem) => (
               <NavLink 
                 key={item.href}
                 item={item} 
@@ -228,24 +225,21 @@ function SidebarContent({
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   onNavigate?: () => void
-  hideCloseButton?: boolean
 }
 
-export function Sidebar({ className, onNavigate, hideCloseButton }: SidebarProps) {
+export function Sidebar({ className, onNavigate }: SidebarProps) {
   const pathname = usePathname()
 
   return (
     <div 
       className={cn(
         "flex flex-col h-full border-r bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        "transition-all duration-300",
         className
       )}
     >
       <SidebarContent 
         pathname={pathname}
         onNavigate={onNavigate}
-        hideCloseButton={hideCloseButton}
       />
     </div>
   )

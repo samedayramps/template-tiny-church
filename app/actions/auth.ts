@@ -4,6 +4,8 @@ import { encodedRedirect } from "@/utils/utils";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { ROLE_ROUTES } from '@/lib/supabase/routes';
+import { Database } from '@/lib/supabase/database.types';
 
 export async function signUpAction(formData: FormData) {
   const email = formData.get("email")?.toString();
@@ -46,7 +48,7 @@ export async function signInAction(formData: FormData) {
 
   console.log('[Auth] Sign in attempt:', { email });
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data: { user }, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -56,7 +58,25 @@ export async function signInAction(formData: FormData) {
     return encodedRedirect("error", "/sign-in", error.message);
   }
 
-  console.log('[Auth] Sign in successful:', { email });
+  if (user) {
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    console.log('[Auth] Sign in successful:', { 
+      email,
+      userId: user.id,
+      role: roleData?.role,
+      redirectTo: ROLE_ROUTES[roleData?.role || 'guest']
+    });
+
+    const userRole = (roleData?.role || 'guest') as Database['public']['Enums']['user_role'];
+    return redirect(ROLE_ROUTES[userRole]);
+  }
+
+  console.log('[Auth] Fallback redirect to protected route');
   return redirect("/protected");
 }
 

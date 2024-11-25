@@ -27,11 +27,11 @@ interface AuthButtonProps {
 }
 
 export default function AuthButton({ user, userRole, isLoading }: AuthButtonProps) {
-  if (isLoading) {
+  if (isLoading && user) {
     return (
-      <Button variant="ghost" size="sm" disabled>
-        <Skeleton className="h-4 w-20" />
-      </Button>
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-8 w-20" />
+      </div>
     )
   }
 
@@ -49,9 +49,9 @@ export default function AuthButton({ user, userRole, isLoading }: AuthButtonProp
     return (
       <div className="flex items-center gap-2">
         <Button asChild variant="ghost" size="sm">
-          <Link href="/sign-in">Sign in</Link>
+          <Link href="/sign-in">Log in</Link>
         </Button>
-        <Button asChild size="sm">
+        <Button asChild size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
           <Link href="/sign-up">Get Started</Link>
         </Button>
       </div>
@@ -96,7 +96,7 @@ export default function AuthButton({ user, userRole, isLoading }: AuthButtonProp
         {userRole === 'admin' && (
           <>
             <DropdownMenuItem asChild>
-              <Link href="/admin/dashboard">Admin Dashboard</Link>
+              <Link href="/admin">Admin Dashboard</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
