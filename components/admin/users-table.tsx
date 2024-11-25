@@ -1,91 +1,40 @@
 "use client"
 
-import * as React from "react"
-import { useMemo } from "react"
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Pencil, Building } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { useMemo, useState } from "react"
+import { ColumnDef } from "@tanstack/react-table"
+import { Building, Pencil, Eye, Trash2 } from "lucide-react"
 import { UserRoleWithAuth } from "@/lib/supabase/types"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { updateUserProfile } from "@/app/actions/user"
-import { updateUserRole, impersonateUser } from "@/app/actions/admin"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog"
-import { Label } from "../ui/label"
-import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { DataTable } from "@/components/ui/data-table/data-table"
+import { DataTableColumnHeader } from "@/components/ui/data-table/data-table-column-header"
+import { impersonateUser } from "@/app/actions/admin"
+import { useTableHandlers } from "@/hooks/use-table-handlers"
 
-export function UsersDataTable({
-  data
-}: {
-  data: UserRoleWithAuth[]
-}) {
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
-  const [isEditing, setIsEditing] = React.useState(false)
-
-  const columns = useMemo<ColumnDef<UserRoleWithAuth>[]>(() => [
+// Create a function to generate columns
+export function createUserColumns(
+  onEdit: (user: UserRoleWithAuth) => void,
+  onDelete: (user: UserRoleWithAuth) => void
+): ColumnDef<UserRoleWithAuth>[] {
+  return [
     {
       id: "email",
       accessorFn: (row) => row.email,
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Email
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Email" />
+      ),
     },
     {
       id: "role",
       accessorFn: (row) => row.role,
-      header: "Role",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Role" />
+      ),
     },
     {
       id: "tenant",
-      header: ({ column }) => {
-        return (
-          <Button
-            variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          >
-            Tenant
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
-        )
-      },
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title="Tenant" />
+      ),
       cell: ({ row }) => {
         const tenant = row.original.metadata?.tenant_name || 'No Tenant'
         return (
@@ -97,269 +46,111 @@ export function UsersDataTable({
       },
     },
     {
-      id: "metadata",
-      accessorFn: (row) => row.metadata,
-      header: "Metadata",
-      cell: ({ row }) => {
-        const metadata = row.original.metadata || {}
-        return (
-          <pre className="text-xs">
-            {JSON.stringify(metadata, null, 2)}
-          </pre>
-        )
-      }
-    },
-    {
-      id: "impersonate",
-      cell: ({ row }) => {
-        const user = row.original;
-        return (
-          <form action={impersonateUser}>
-            <input type="hidden" name="userId" value={user.id} />
-            <Button 
-              type="submit" 
-              variant="outline" 
-              size="sm"
-              loadingText="Switching..."
-            >
-              View as User
-            </Button>
-          </form>
-        );
-      }
-    },
-    {
       id: "actions",
       cell: ({ row }) => {
         const user = row.original
-
         return (
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => setIsEditing(true)}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Edit User
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                // Add your view action here
+                console.log("View user:", user)
+              }}
+            >
+              <Eye className="h-4 w-4" />
+              <span className="sr-only">View</span>
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onEdit(user)
+              }}
+            >
+              <Pencil className="h-4 w-4" />
+              <span className="sr-only">Edit</span>
+            </Button>
 
-            <Dialog open={isEditing} onOpenChange={setIsEditing}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Edit User</DialogTitle>
-                </DialogHeader>
-                <form action={updateUserProfile}>
-                  <input type="hidden" name="userId" value={user.id} />
-                  
-                  <div className="grid gap-4 py-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        defaultValue={user.email}
-                        type="email"
-                      />
-                    </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onDelete(user)
+              }}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+              <span className="sr-only">Delete</span>
+            </Button>
 
-                    <div className="grid gap-2">
-                      <Label htmlFor="role">Role</Label>
-                      <select
-                        id="role"
-                        name="role"
-                        defaultValue={user.role}
-                        className="form-select"
-                      >
-                        <option value="admin">Admin</option>
-                        <option value="user">User</option>
-                        <option value="guest">Guest</option>
-                      </select>
-                    </div>
-
-                    <div className="grid gap-2">
-                      <Label htmlFor="metadata">Metadata</Label>
-                      <Input
-                        id="metadata"
-                        name="metadata"
-                        defaultValue={JSON.stringify(user.metadata)}
-                      />
-                    </div>
-
-                    <div className="grid gap-2">
-                      <Label htmlFor="raw_user_meta_data">Raw User Metadata</Label>
-                      <Input
-                        id="raw_user_meta_data"
-                        name="raw_user_meta_data"
-                        defaultValue={JSON.stringify(user.raw_user_meta_data)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end gap-2">
-                    <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>
-                      Cancel
-                    </Button>
-                    <Button 
-                      type="submit"
-                      loadingText="Saving..."
-                    >
-                      Save Changes
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </>
+            <form action={impersonateUser}>
+              <input type="hidden" name="userId" value={user.id} />
+              <Button 
+                type="submit" 
+                variant="outline" 
+                size="sm"
+              >
+                View as User
+              </Button>
+            </form>
+          </div>
         )
       }
     }
-  ], [])
+  ]
+}
 
-  const table = useReactTable({
-    data,
-    columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    state: {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-    },
-  })
+export function UsersDataTable({ data }: { data: UserRoleWithAuth[] }) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<UserRoleWithAuth | null>(null)
+  const { handleEdit, handleDelete, isPending } = useTableHandlers<UserRoleWithAuth>()
 
-  React.useEffect(() => {
-    console.log('[UsersDataTable] Table state:', {
-      sorting,
-      columnFilters,
-      columnVisibility,
-      rowSelection,
-      columns: table.getAllColumns().map(col => ({
-        id: col.id,
-        isVisible: col.getIsVisible()
-      }))
-    });
-  }, [sorting, columnFilters, columnVisibility, rowSelection, table])
+  const columns = useMemo(
+    () => createUserColumns(
+      (user) => {
+        setSelectedUser(user)
+        setIsEditing(true)
+      },
+      (user) => {
+        setSelectedUser(user)
+        setIsDeleting(true)
+      }
+    ),
+    []
+  )
 
   return (
-    <div className="w-full">
-      <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("email")?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Columns <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter((column) => column.getCanHide())
-              .map((column) => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={(value) =>
-                      column.toggleVisibility(!!value)
-                    }
-                  >
-                    {column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
-    </div>
+    <DataTable
+      columns={columns}
+      data={data}
+      searchKey="email"
+      searchPlaceholder="Filter emails..."
+      pageSize={10}
+      deleteAction={async (user) => {
+        await handleDelete(user, async (userData) => {
+          // Implement your delete logic here
+          console.log("Deleting user:", userData)
+        })
+      }}
+      editAction={async (user) => {
+        await handleEdit(user, async (userData) => {
+          // Implement your edit logic here
+          console.log("Editing user:", userData)
+        })
+      }}
+      viewAction={(user) => {
+        // View user logic
+        console.log("View user:", user)
+      }}
+      deleteModalTitle="Delete User"
+      deleteModalDescription="This will permanently delete the user account and remove their data from our servers."
+      editModalTitle="Edit User"
+    />
   )
-} 
+}
+
+// Export the column generator function instead of the columns directly
+export { createUserColumns as userTableColumns }
