@@ -6,6 +6,9 @@ import { createClientSupabaseClient } from "@/lib/data/supabase/client";
 import { TenantsDataTable } from "@/components/admin/tenants-table";
 import { useEffect, useState } from "react";
 import { Database } from "@/lib/data/supabase/database.types";
+import { useSearchParams } from 'next/navigation';
+import { useToast } from "@/hooks/use-toast";
+import { CreateTenantDialog } from "@/components/admin/create-tenant-dialog";
 
 // Define types for the data structure returned from Supabase
 type TenantWithProfile = {
@@ -35,6 +38,34 @@ interface TenantWithAdmin {
 function TenantsPage() {
   const [tenants, setTenants] = useState<TenantWithAdmin[]>([]);
   const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+  
+  // Add a refresh key state
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    // Show success/error messages from URL params
+    const success = searchParams.get('success');
+    const error = searchParams.get('error');
+
+    if (success) {
+      toast({
+        title: "Success",
+        description: success,
+      });
+      // Trigger refresh when success message is shown
+      setRefreshKey(prev => prev + 1);
+    }
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: error,
+        variant: "destructive",
+      });
+    }
+  }, [searchParams, toast]);
 
   useEffect(() => {
     const fetchTenants = async () => {
@@ -90,15 +121,18 @@ function TenantsPage() {
     };
 
     fetchTenants();
-  }, []);
+  }, [refreshKey]);
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Manage Tenants</h1>
-        <p className="text-sm text-muted-foreground">
-          Total tenants: {tenants?.length || 0}
-        </p>
+        <div>
+          <h1 className="text-2xl font-bold">Manage Tenants</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Create and manage tenant organizations.
+          </p>
+        </div>
+        <CreateTenantDialog />
       </div>
       
       {loading ? (

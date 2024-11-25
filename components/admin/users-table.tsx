@@ -53,48 +53,19 @@ export function createUserColumns(
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="sm"
-              onClick={() => {
-                // Add your view action here
-                console.log("View user:", user)
-              }}
-            >
-              <Eye className="h-4 w-4" />
-              <span className="sr-only">View</span>
-            </Button>
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                onEdit(user)
-              }}
+              size="icon"
+              onClick={() => onEdit(user)}
             >
               <Pencil className="h-4 w-4" />
-              <span className="sr-only">Edit</span>
             </Button>
-
             <Button
               variant="ghost"
-              size="sm"
-              onClick={() => {
-                onDelete(user)
-              }}
+              size="icon"
+              onClick={() => onDelete(user)}
+              className="text-destructive hover:text-destructive"
             >
-              <Trash2 className="h-4 w-4 text-destructive" />
-              <span className="sr-only">Delete</span>
+              <Trash2 className="h-4 w-4" />
             </Button>
-
-            <form action={impersonateUser}>
-              <input type="hidden" name="userId" value={user.id} />
-              <Button 
-                type="submit" 
-                variant="outline" 
-                size="sm"
-              >
-                View as User
-              </Button>
-            </form>
           </div>
         )
       }

@@ -133,6 +133,7 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          created_by: string | null
           email: string
           id: string
           metadata: Json | null
@@ -140,9 +141,11 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"] | null
           tenant_id: string | null
           updated_at: string
+          updated_by: string | null
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           email: string
           id: string
           metadata?: Json | null
@@ -150,9 +153,11 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"] | null
           tenant_id?: string | null
           updated_at?: string
+          updated_by?: string | null
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           email?: string
           id?: string
           metadata?: Json | null
@@ -160,6 +165,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"] | null
           tenant_id?: string | null
           updated_at?: string
+          updated_by?: string | null
         }
         Relationships: [
           {
@@ -238,9 +244,32 @@ export type Database = {
       create_tenant: {
         Args: {
           tenant_name: string
-          admin_email: string
+          admin_user_id: string
         }
-        Returns: string
+        Returns: Json
+      }
+      create_tenant_with_admin: {
+        Args: {
+          tenant_name: string
+          admin_user_id: string
+        }
+        Returns: Json
+      }
+      create_user_profile: {
+        Args: {
+          p_user_id: string
+          p_email: string
+          p_role: string
+          p_tenant_id?: string
+          p_created_by?: string
+        }
+        Returns: undefined
+      }
+      delete_tenant: {
+        Args: {
+          tenant_id: string
+        }
+        Returns: undefined
       }
       get_active_impersonation: {
         Args: Record<PropertyKey, never>

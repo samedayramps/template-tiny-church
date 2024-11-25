@@ -14,12 +14,12 @@ type UserRoleUpdate = Database['public']['Tables']['user_roles']['Update']
 // Update type definitions to match database types
 type DBUserRole = Database['public']['Enums']['user_role']
 
-export const createServerSupabaseClient = cache(async () => {
+export const createServerSupabaseClient = cache(async (useServiceRole: boolean = false) => {
   const cookieStore = await cookies()
   
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    useServiceRole ? process.env.SUPABASE_SERVICE_ROLE_KEY! : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {

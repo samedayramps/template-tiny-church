@@ -112,11 +112,20 @@ export function SiteHeader({ user, initialRole, className }: SiteHeaderProps) {
                   </Button>
                 </Link>
               )}
-              <AuthButton 
-                user={user} 
-                userRole={userRole} 
-                isLoading={isLoading}
-              />
+              {!user && (
+                <Link href="/auth/sign-in">
+                  <Button variant="ghost" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+              )}
+              {user && (
+                <AuthButton 
+                  user={user} 
+                  userRole={userRole} 
+                  isLoading={isLoading}
+                />
+              )}
             </div>
           </div>
         </div>
