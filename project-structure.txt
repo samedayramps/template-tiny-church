@@ -1,0 +1,155 @@
+.
+├── actions
+│   ├── admin.ts
+│   ├── auth.ts
+│   ├── subscription.ts
+│   ├── tenant
+│   │   ├── create.ts
+│   │   └── delete.ts
+│   ├── user
+│   │   ├── create.ts
+│   │   └── delete.ts
+│   ├── user.ts
+│   └── utils.ts
+├── app
+│   ├── admin
+│   │   ├── dashboard
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── tenants
+│   │   │   └── page.tsx
+│   │   └── users
+│   │       └── page.tsx
+│   ├── auth
+│   │   ├── callback
+│   │   │   └── route.ts
+│   │   ├── forgot-password
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── reset-password
+│   │   │   └── page.tsx
+│   │   ├── sign-in
+│   │   │   └── page.tsx
+│   │   └── sign-up
+│   │       └── page.tsx
+│   ├── dashboard
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── error.tsx
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   ├── loading.tsx
+│   └── page.tsx
+├── components
+│   ├── admin
+│   │   ├── sidebar.tsx
+│   │   ├── tenant
+│   │   │   ├── create-tenant-dialog.tsx
+│   │   │   ├── edit-tenant-form.tsx
+│   │   │   └── tenants-table.tsx
+│   │   └── user
+│   │       ├── create-user-dialog.tsx
+│   │       ├── edit-user-form.tsx
+│   │       └── users-table.tsx
+│   ├── common
+│   │   ├── auth-card.tsx
+│   │   └── smtp-message.tsx
+│   ├── form-message.tsx
+│   ├── header-auth.tsx
+│   ├── hoc
+│   │   └── with-admin-protection.tsx
+│   ├── impersonation-banner.tsx
+│   ├── layouts
+│   │   └── impersonation-wrapper.tsx
+│   ├── logo.tsx
+│   ├── site-header.tsx
+│   ├── submit-button.tsx
+│   ├── subscribe-form.tsx
+│   ├── theme-switcher.tsx
+│   └── ui
+│       ├── alert-dialog.tsx
+│       ├── alert.tsx
+│       ├── avatar.tsx
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── card.tsx
+│       ├── checkbox.tsx
+│       ├── data-table
+│       │   ├── data-table-column-header.tsx
+│       │   ├── data-table-empty.tsx
+│       │   ├── data-table-error.tsx
+│       │   ├── data-table-header.tsx
+│       │   ├── data-table-page.tsx
+│       │   ├── data-table-pagination.tsx
+│       │   ├── data-table-view-options.tsx
+│       │   ├── data-table.tsx
+│       │   └── table-skeleton.tsx
+│       ├── dialog.tsx
+│       ├── dropdown-menu.tsx
+│       ├── form
+│       │   └── edit-form.tsx
+│       ├── form.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── logo.tsx
+│       ├── scroll-area.tsx
+│       ├── select.tsx
+│       ├── separator.tsx
+│       ├── sheet.tsx
+│       ├── skeleton.tsx
+│       ├── table.tsx
+│       ├── tabs.tsx
+│       ├── toast.tsx
+│       └── toaster.tsx
+├── components.json
+├── hooks
+│   ├── use-impersonation.ts
+│   ├── use-media-query.ts
+│   ├── use-table-handlers.ts
+│   ├── use-table-state.ts
+│   └── use-toast.ts
+├── lib
+│   ├── auth
+│   │   ├── guards.ts
+│   │   └── middleware
+│   │       ├── handlers
+│   │       │   ├── auth.ts
+│   │       │   └── impersonation.ts
+│   │       └── utils
+│   │           └── supabase.ts
+│   ├── data
+│   │   └── supabase
+│   │       ├── auth.ts
+│   │       ├── check-env-vars.ts
+│   │       ├── client.ts
+│   │       ├── database.types.ts
+│   │       ├── impersonation.ts
+│   │       ├── routes.ts
+│   │       ├── server.ts
+│   │       └── types.ts
+│   ├── utils.ts
+│   └── validations
+│       └── data-table.ts
+├── middleware.ts
+├── next-env.d.ts
+├── next.config.js
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── project-structure.txt
+├── public
+│   ├── favicon.png
+│   └── logo.svg
+├── supabase
+│   ├── config.toml
+│   └── migrations
+├── tailwind.config.ts
+├── tsconfig.json
+├── types
+│   └── data-table.ts
+└── utils
+    ├── cn.ts
+    └── utils.ts
+
+40 directories, 113 files

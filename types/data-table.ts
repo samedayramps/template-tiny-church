@@ -76,3 +76,51 @@ export interface DataTableErrorProps {
   error: Error
   reset: () => void
 } 
+
+export interface DataTablePageProps<TData, TValue> {
+  // Basic props
+  variant?: "full-page" | "embedded";
+  title?: string;
+  description?: string;
+  columns: ColumnDef<TData, TValue>[];
+  data: TData[];
+  fetchData?: () => Promise<TData[]>;
+  searchKey?: keyof TData | string;
+  searchPlaceholder?: string;
+  headerMetrics?: React.ReactNode;
+  createAction?: () => void;
+  storageKey?: string;
+  className?: string;
+
+  // Table configuration
+  pageSize?: number;
+  filterableColumns?: {
+    id: string;
+    title: string;
+    options: {
+      label: string;
+      value: string;
+    }[];
+  }[];
+
+  // State props
+  loading?: boolean;
+  error?: Error;
+  refetchData?: () => Promise<void>;
+
+  // Custom components
+  emptyState?: React.ReactNode;
+  customActions?: React.ReactNode;
+
+  // Action props
+  deleteAction?: (item: TData) => Promise<void>;
+  getItemDisplayName?: (item: TData) => string;
+  deleteModalTitle?: string;
+  deleteModalDescription?: (name: string) => string;
+  editAction?: (item: TData) => Promise<void>;
+  editModalTitle?: string;
+  editModalContent?: (item: TData) => React.ReactNode;
+  viewAction?: (item: TData) => void;
+  viewModalTitle?: string;
+  viewModalDescription?: (name: string) => string;
+} 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useCallback } from "react"
 import { ColumnDef } from "@tanstack/react-table"
 import { Users, Pencil, Eye, Trash2, Loader2 } from "lucide-react"
 import { DataTable } from "@/components/ui/data-table/data-table"
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { formatDate } from "@/lib/utils"
 import { useTableHandlers } from "@/hooks/use-table-handlers"
 import { useTableState } from "@/hooks/use-table-state"
+import Link from "next/link"
 
 interface TenantData {
   id: string
@@ -90,37 +91,78 @@ export function createTenantColumns(): ColumnDef<TenantData>[] {
 }
 
 export function TenantsDataTable({ data }: { data: TenantData[] }) {
-  const columns = useMemo(() => createTenantColumns(), [])
-  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({})
+  const baseColumns = useMemo(() => createTenantColumns(), []);
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({});
+
+  // Create actions column separately
+  const columnsWithActions = useMemo(() => {
+    return [
+      ...baseColumns,
+      {
+        id: "row_actions", // Changed from "actions" to be unique
+        cell: ({ row }) => {
+          const tenant = row.original;
+          return (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                className="hover:bg-muted"
+              >
+                <Link href={`/admin/tenants/${tenant.id}`}>
+                  <Eye className="h-4 w-4" />
+                  <span className="sr-only">View tenant details</span>
+                </Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                className="hover:bg-muted"
+              >
+                <Link href={`/admin/tenants/${tenant.tenant_id}/edit`}>
+                  <Pencil className="h-4 w-4" />
+                  <span className="sr-only">Edit tenant</span>
+                </Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                asChild
+                className="hover:bg-muted"
+              >
+                <Link href={`/admin/tenants/${tenant.tenant_id}`}>
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only">Delete tenant</span>
+                </Link>
+              </Button>
+            </div>
+          );
+        },
+      },
+    ];
+  }, [baseColumns]);
+
+  // Create a handler function that matches the expected type
+  const handleColumnVisibilityChange = useCallback((columnId: string, isVisible: boolean) => {
+    setColumnVisibility(prev => ({
+      ...prev,
+      [columnId]: isVisible
+    }));
+  }, []);
 
   return (
     <DataTable
-      columns={columns}
+      columns={columnsWithActions}
       data={data}
       searchKey="tenant_name"
       searchPlaceholder="Filter tenants..."
       pageSize={10}
-      deleteAction={async (tenant) => {
-        console.log("Deleting tenant:", tenant)
-      }}
-      editAction={async (tenant) => {
-        console.log("Editing tenant:", tenant)
-      }}
-      viewAction={(tenant) => {
-        console.log("View tenant:", tenant)
-      }}
-      deleteModalTitle="Delete Tenant"
-      deleteModalDescription="This will permanently delete the tenant and remove all associated data."
-      editModalTitle="Edit Tenant"
       columnVisibility={columnVisibility}
-      onColumnVisibilityChange={(columnId, isVisible) => {
-        setColumnVisibility(prev => ({
-          ...prev,
-          [columnId]: isVisible
-        }))
-      }}
+      onColumnVisibilityChange={handleColumnVisibilityChange}
     />
-  )
+  );
 }
 
 // Export the column generator function

@@ -194,6 +194,25 @@ export function DataTable<TData, TValue>({
     [table, columns]
   )
 
+  const handleEdit = async (item: TData) => {
+    if (editAction) {
+      try {
+        await Promise.resolve(editAction(item));
+        setIsEditing(false);
+        toast({
+          title: "Success",
+          description: "Item updated successfully",
+        });
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to update item",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   return (
     <div className="space-y-4">
       <Suspense fallback={loadingState || <TableSkeleton />}>

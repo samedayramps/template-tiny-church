@@ -93,7 +93,7 @@ function TenantsPage() {
       deleteAction={async (tenant) => deleteTenant(tenant.tenant_id)}
       getItemDisplayName={(tenant) => tenant.tenant_name}
       deleteModalTitle="Delete Tenant"
-      deleteModalDescription={(name) => 
+      deleteModalDescription={(name: string) => 
         `Are you sure you want to delete ${name}? This action cannot be undone and will remove all associated data.`
       }
       editAction={async (tenant) => {
@@ -113,6 +113,11 @@ function TenantsPage() {
           }} 
         />
       )}
+      viewAction={(tenant) => {
+        window.location.href = `/admin/tenants/${tenant.tenant_id}`;
+      }}
+      viewModalTitle="View Tenant Details"
+      viewModalDescription={(name: string) => `Viewing details for ${name}`}
     />
   );
 }

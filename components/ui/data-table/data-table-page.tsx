@@ -21,14 +21,21 @@ import { ReactNode } from "react"
 
 interface DataTablePageProps<TData, TValue> {
   // Basic props
-  title: string
+  variant?: "full-page" | "embedded"
+  title?: string
   description?: string
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
-  
-  // Search and filtering
-  searchKey?: keyof TData & string
+  fetchData?: () => Promise<TData[]>
+  searchKey?: keyof TData | undefined
   searchPlaceholder?: string
+  headerMetrics?: React.ReactNode
+  createAction?: () => void
+  storageKey?: string
+  className?: string
+  pageSize?: number
+
+  // Table configuration
   filterableColumns?: {
     id: string
     title: string
@@ -38,41 +45,26 @@ interface DataTablePageProps<TData, TValue> {
     }[]
   }[]
 
-  // Loading and error states
+  // State props
   loading?: boolean
   error?: Error
-  
-  // Actions
-  createAction?: () => void
-  deleteAction?: (data: TData) => Promise<void>
-  editAction?: (data: TData) => Promise<void>
-  viewAction?: (data: TData) => void
-  
-  // Data fetching
-  fetchData?: () => Promise<TData[]>
   refetchData?: () => Promise<void>
-  
-  // UI Customization
-  className?: string
-  headerMetrics?: React.ReactNode
+
+  // Custom components
   emptyState?: React.ReactNode
   customActions?: React.ReactNode
-  
-  // Table configuration
-  pageSize?: number
-  storageKey?: string
 
-  // Delete modal configuration
-  deleteModalTitle?: string
-  deleteModalDescription?: (itemName: string) => string
+  // Action props
+  deleteAction?: (item: TData) => Promise<void>
   getItemDisplayName?: (item: TData) => string
-  
-  // Layout options
-  variant?: 'default' | 'full-page'
-
-  // Edit modal configuration
+  deleteModalTitle?: string
+  deleteModalDescription?: (name: string) => string
+  editAction?: (item: TData) => Promise<void>
   editModalTitle?: string
-  editModalContent?: (item: TData) => ReactNode
+  editModalContent?: (item: TData) => React.ReactNode
+  viewAction?: (item: TData) => void
+  viewModalTitle?: string
+  viewModalDescription?: (name: string) => string
 }
 
 export function DataTablePage<TData extends { id: string }, TValue>({
@@ -100,7 +92,7 @@ export function DataTablePage<TData extends { id: string }, TValue>({
   deleteModalTitle = "Delete Item",
   deleteModalDescription = (name) => `Are you sure you want to delete ${name}? This action cannot be undone.`,
   getItemDisplayName = (item: TData) => item.id,
-  variant = 'default',
+  variant = "embedded",
   editModalTitle,
   editModalContent
 }: DataTablePageProps<TData, TValue>) {
@@ -295,11 +287,13 @@ export function DataTablePage<TData extends { id: string }, TValue>({
               searchPlaceholder={searchPlaceholder}
               filterableColumns={filterableColumns}
               deleteAction={handleDelete}
-              editAction={editAction}
+              editAction={async (item: TData) => {
+                if (editAction) {
+                  await editAction(item);
+                }
+              }}
               viewAction={viewAction}
               createAction={createAction}
-              pageSize={pageSize}
-              storageKey={storageKey}
               loadingState={state.loading ? <TableSkeleton /> : undefined}
               columnVisibility={state.columnVisibility}
               onColumnVisibilityChange={handleColumnVisibilityChange}
